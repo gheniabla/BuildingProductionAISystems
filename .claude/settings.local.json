@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(brew install:*)",
+      "Bash(./generate-pdf.sh:*)",
+      "Bash(pandoc:*)",
+      "WebSearch"
+    ]
+  }
+}

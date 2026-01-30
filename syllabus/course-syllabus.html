@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Building Production AI Systems - Course Syllabus</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Building Production AI Systems - Course Syllabus</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#building-production-ai-systems"
+id="toc-building-production-ai-systems">Building Production AI
+Systems</a>
+<ul>
+<li><a href="#course-syllabus" id="toc-course-syllabus">Course
+Syllabus</a></li>
+<li><a href="#course-overview" id="toc-course-overview">Course
+Overview</a></li>
+<li><a href="#learning-objectives" id="toc-learning-objectives">Learning
+Objectives</a></li>
+<li><a href="#weekly-schedule-overview"
+id="toc-weekly-schedule-overview">Weekly Schedule Overview</a></li>
+<li><a href="#detailed-weekly-schedule"
+id="toc-detailed-weekly-schedule">Detailed Weekly Schedule</a>
+<ul>
+<li><a href="#week-1-foundations-of-production-ai"
+id="toc-week-1-foundations-of-production-ai">Week 1: Foundations of
+Production AI</a></li>
+<li><a href="#week-2-production-architecture-patterns"
+id="toc-week-2-production-architecture-patterns">Week 2: Production
+Architecture Patterns</a></li>
+<li><a href="#week-3-ai-evaluation-systems"
+id="toc-week-3-ai-evaluation-systems">Week 3: AI Evaluation
+Systems</a></li>
+<li><a href="#week-4-ai-security-and-guardrails"
+id="toc-week-4-ai-security-and-guardrails">Week 4: AI Security and
+Guardrails</a></li>
+<li><a href="#week-5-midterm-rag-systems"
+id="toc-week-5-midterm-rag-systems">Week 5: Midterm &amp; RAG
+Systems</a></li>
+<li><a href="#week-6-deployment-strategies"
+id="toc-week-6-deployment-strategies">Week 6: Deployment
+Strategies</a></li>
+<li><a href="#week-7-optimization-techniques"
+id="toc-week-7-optimization-techniques">Week 7: Optimization
+Techniques</a></li>
+<li><a href="#week-8-observability-and-operations"
+id="toc-week-8-observability-and-operations">Week 8: Observability and
+Operations</a></li>
+<li><a href="#week-9-project-development"
+id="toc-week-9-project-development">Week 9: Project Development</a></li>
+<li><a href="#week-10-final-presentations"
+id="toc-week-10-final-presentations">Week 10: Final
+Presentations</a></li>
+</ul></li>
+<li><a href="#assignments-overview"
+id="toc-assignments-overview">Assignments Overview</a></li>
+<li><a href="#grading" id="toc-grading">Grading</a></li>
+<li><a href="#technology-stack" id="toc-technology-stack">Technology
+Stack</a>
+<ul>
+<li><a href="#required" id="toc-required">Required</a></li>
+<li><a href="#used-throughout-course"
+id="toc-used-throughout-course">Used Throughout Course</a></li>
+</ul></li>
+<li><a href="#required-reading" id="toc-required-reading">Required
+Reading</a></li>
+<li><a href="#office-hours" id="toc-office-hours">Office Hours</a></li>
+<li><a href="#academic-integrity" id="toc-academic-integrity">Academic
+Integrity</a></li>
+<li><a href="#accessibility"
+id="toc-accessibility">Accessibility</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="building-production-ai-systems">Building Production AI
+Systems</h1>
+<h2 id="course-syllabus">Course Syllabus</h2>
+<p><strong>Course Duration:</strong> 10 Weeks <strong>Lectures:</strong>
+16 Sessions (2 per week, Weeks 1-8) <strong>Assessments:</strong>
+Midterm (Week 5), Final Project Demo (Week 10)
+<strong>Prerequisites:</strong> Python proficiency, basic ML/AI
+understanding, familiarity with REST APIs</p>
+<hr />
+<h2 id="course-overview">Course Overview</h2>
+<p>This course addresses one of the hardest problems in modern
+engineering: <strong>taking AI systems from impressive demos to
+reliable, secure, production-ready systems used by real
+users.</strong></p>
+<p>While building a ChatGPT wrapper that works in a Jupyter notebook
+takes hours, building an AI system that can handle thousands of
+concurrent users, survive adversarial attacks, stay within budget, and
+maintain quality over time takes months of careful engineering.</p>
+<p>This course bridges that gap.</p>
+<hr />
+<h2 id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this course, students will be able to:</p>
+<ol type="1">
+<li><strong>Design and implement production-grade AI
+architectures</strong> using FastAPI, Pydantic v2, and Celery/Redis</li>
+<li><strong>Build comprehensive evaluation systems</strong> for LLMs,
+RAG pipelines, and AI agents</li>
+<li><strong>Identify and mitigate AI-specific security threats</strong>
+including prompt injection and model DoS</li>
+<li><strong>Deploy optimized AI systems</strong> using Docker,
+Kubernetes, and serving engines like vLLM</li>
+<li><strong>Implement observability solutions</strong> with distributed
+tracing and quality monitoring</li>
+<li><strong>Make informed trade-offs</strong> between latency, cost,
+reliability, and development velocity</li>
+</ol>
+<hr />
+<h2 id="weekly-schedule-overview">Weekly Schedule Overview</h2>
+<pre><code>┌─────────┬────────────────────────────────────────────────────────────────────┐
+│  Week   │                           Topics                                   │
+├─────────┼────────────────────────────────────────────────────────────────────┤
+│    1    │ Foundations: GenAI Review &amp; Production Mindset                     │
+│    2    │ Production Architecture: FastAPI + Pydantic + Async Patterns       │
+│    3    │ AI Evaluation: Metrics, Datasets, and Scoring Systems              │
+│    4    │ AI Security: Threat Modeling and Guardrails                        │
+│    5    │ ★ MIDTERM EXAM + RAG Systems Deep Dive                             │
+│    6    │ Deployment: Containers, Kubernetes, and Serving Engines            │
+│    7    │ Optimization: Quantization, Caching, and Batching                  │
+│    8    │ Observability: Tracing, Monitoring, and Quality Assurance          │
+│    9    │ Project Development Week (No Lectures - Office Hours)              │
+│   10    │ ★ FINAL PROJECT DEMONSTRATIONS                                     │
+└─────────┴────────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="detailed-weekly-schedule">Detailed Weekly Schedule</h2>
+<h3 id="week-1-foundations-of-production-ai">Week 1: Foundations of
+Production AI</h3>
+<p><strong>Lecture 1: The Production AI Landscape</strong> - The
+demo-to-production gap: Why 90% of AI projects fail in production -
+Anatomy of production AI systems: Components and data flows - War story:
+The $100,000 weekend (runaway API costs) - Trade-off frameworks: Latency
+vs. Cost, Reliability vs. Velocity - Modern AI architectures: LLMs, RAG,
+Agents, and Multi-modal systems</p>
+<p><strong>Lecture 2: Generative AI Technical Review</strong> -
+Transformer architecture refresher - Tokenization, context windows, and
+attention mechanisms - API-based vs. self-hosted models: Decision
+framework - Model selection criteria for production - Hands-on: Setting
+up the development environment</p>
+<p><strong>Assignment 1 Released:</strong> Production Environment Setup
+&amp; Basic LLM Integration</p>
+<hr />
+<h3 id="week-2-production-architecture-patterns">Week 2: Production
+Architecture Patterns</h3>
+<p><strong>Lecture 3: The FastAPI + Pydantic Stack</strong> - Why
+FastAPI for AI systems: Performance benchmarks - Pydantic v2: Data
+validation at the speed of Rust - Request/response modeling for AI
+endpoints - Dependency injection patterns - Error handling strategies
+for AI failures</p>
+<p><strong>Lecture 4: Asynchronous AI Workloads</strong> - Understanding
+async/await in Python - Celery + Redis for background AI tasks - Task
+queues, priorities, and dead letter handling - Implementing retry
+strategies with exponential backoff - Hands-on: Building an async AI
+processing pipeline</p>
+<hr />
+<h3 id="week-3-ai-evaluation-systems">Week 3: AI Evaluation Systems</h3>
+<p><strong>Lecture 5: Evaluation Fundamentals</strong> - Why evaluation
+is the hardest problem in AI - Evaluation dataset types: Golden,
+adversarial, regression, and edge cases - Standard metrics: BLEU, ROUGE,
+BERTScore, and their limitations - Building evaluation datasets that
+actually matter - Case study: How evaluation failures led to production
+incidents</p>
+<p><strong>Lecture 6: Advanced Evaluation Techniques</strong> -
+LLM-as-judge: Principles and pitfalls - Designing rubrics that correlate
+with human judgment - Guardrails for automated evaluation - A/B testing
+for AI systems - Frameworks: OpenAI Evals, RAGAS, DeepEval - Hands-on:
+Building a custom evaluation pipeline</p>
+<p><strong>Assignment 1 Due / Assignment 2 Released:</strong> Building
+an AI Evaluation Suite</p>
+<hr />
+<h3 id="week-4-ai-security-and-guardrails">Week 4: AI Security and
+Guardrails</h3>
+<p><strong>Lecture 7: AI Threat Landscape</strong> - OWASP Top 10 for
+LLM Applications - Prompt injection: Direct, indirect, and jailbreaks -
+Insecure output handling and data exfiltration - Model denial of service
+attacks - Supply chain risks in AI systems - MITRE ATLAS threat
+taxonomy</p>
+<p><strong>Lecture 8: Implementing Guardrails</strong> - Input
+sanitization strategies - Output validation and content filtering - Rate
+limiting and abuse prevention - Secrets management in AI pipelines -
+Building defense-in-depth architectures - Hands-on: Implementing a
+security layer for LLM applications</p>
+<hr />
+<h3 id="week-5-midterm-rag-systems">Week 5: Midterm &amp; RAG
+Systems</h3>
+<p><strong>Lecture 9: ★ MIDTERM EXAMINATION</strong> - Covers Weeks 1-4
+material - Written exam + practical component</p>
+<p><strong>Lecture 10: RAG Systems Deep Dive</strong> - Vector database
+selection: Pinecone vs. Weaviate vs. Qdrant - Indexing strategies: HNSW,
+IVFFlat, and trade-offs - Chunking strategies that actually work -
+Hybrid search: Combining dense and sparse retrieval - Reranking and
+contextual compression</p>
+<p><strong>Assignment 2 Due / Assignment 3 Released:</strong> Secure RAG
+Pipeline with Guardrails</p>
+<hr />
+<h3 id="week-6-deployment-strategies">Week 6: Deployment Strategies</h3>
+<p><strong>Lecture 11: Containerization and Orchestration</strong> -
+Docker best practices for AI workloads - Kubernetes fundamentals for ML
+engineers - Resource management: GPUs, memory, and CPU allocation -
+Horizontal Pod Autoscaling for AI services - Hybrid routing: Self-hosted
++ managed API patterns</p>
+<p><strong>Lecture 12: Model Serving Engines</strong> - vLLM:
+Architecture and optimization techniques - NVIDIA TensorRT-LLM: When and
+how to use it - Serving framework comparison: Triton, Ray Serve, BentoML
+- Staged rollouts and canary deployments - Hands-on: Deploying a model
+with vLLM on Kubernetes</p>
+<hr />
+<h3 id="week-7-optimization-techniques">Week 7: Optimization
+Techniques</h3>
+<p><strong>Lecture 13: Model Optimization</strong> - Quantization
+fundamentals: FP16, FP8, INT8, INT4 - Post-training quantization
+vs. quantization-aware training - Pruning strategies for production
+models - Knowledge distillation: Building smaller, faster models - When
+optimization hurts: Quality degradation patterns</p>
+<p><strong>Lecture 14: Inference Optimization</strong> - Prompt caching
+strategies - KV cache optimization - Efficient attention variants: Flash
+Attention, Paged Attention - Batching strategies: Static, dynamic, and
+continuous - Speculative decoding - Hands-on: Optimizing an inference
+pipeline</p>
+<p><strong>Assignment 3 Due / Assignment 4 Released:</strong> Optimized
+Model Deployment Pipeline</p>
+<hr />
+<h3 id="week-8-observability-and-operations">Week 8: Observability and
+Operations</h3>
+<p><strong>Lecture 15: Distributed Tracing for AI</strong> - Why AI
+systems need specialized observability - OpenTelemetry for AI workloads
+- Tracing LLM calls, embeddings, and retrievals - Cost tracking and
+attribution - Tools: LangSmith, Honeycomb, Arize Phoenix</p>
+<p><strong>Lecture 16: Quality Monitoring and Incident Response</strong>
+- Detecting quality regressions in production - Building quality
+dashboards - Alert design for AI systems - Incident response playbooks -
+Post-mortem practices for AI failures - Hands-on: Implementing an
+observability stack</p>
+<p><strong>Assignment 4 Due / Assignment 5 (Final) Released:</strong>
+End-to-End Production AI System</p>
+<hr />
+<h3 id="week-9-project-development">Week 9: Project Development</h3>
+<p><strong>No Formal Lectures</strong> - Extended office hours - Project
+architecture reviews - Technical deep-dives on request - Guest speaker
+(industry practitioner)</p>
+<hr />
+<h3 id="week-10-final-presentations">Week 10: Final Presentations</h3>
+<p><strong>Day 1: Final Project Demonstrations (Groups 1-8)</strong> -
+15-minute demo + 5-minute Q&amp;A per group</p>
+<p><strong>Day 2: Final Project Demonstrations (Groups 9-16) + Course
+Wrap-up</strong> - Remaining demonstrations - Course retrospective -
+Career paths in Production AI - Continuing education resources</p>
+<p><strong>Assignment 5 Due:</strong> Complete system demonstration and
+code submission</p>
+<hr />
+<h2 id="assignments-overview">Assignments Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Assignment</th>
+<th>Topic</th>
+<th>Weight</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Production Environment &amp; LLM Integration</td>
+<td>10%</td>
+<td>Weeks 1-3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AI Evaluation Suite</td>
+<td>15%</td>
+<td>Weeks 3-5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Secure RAG Pipeline</td>
+<td>15%</td>
+<td>Weeks 5-7</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Optimized Deployment Pipeline</td>
+<td>15%</td>
+<td>Weeks 7-8</td>
+</tr>
+<tr>
+<td>5</td>
+<td>End-to-End Production System (Final)</td>
+<td>25%</td>
+<td>Weeks 8-10</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="grading">Grading</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Assignments (1-4)</td>
+<td>55%</td>
+</tr>
+<tr>
+<td>Midterm Exam</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>Final Project</td>
+<td>25%</td>
+</tr>
+<tr>
+<td>Participation &amp; Labs</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="technology-stack">Technology Stack</h2>
+<h3 id="required">Required</h3>
+<ul>
+<li><strong>Python 3.11+</strong> (Expert level expected)</li>
+<li><strong>FastAPI + Pydantic v2</strong> (Backend framework)</li>
+<li><strong>Docker</strong> (Containerization)</li>
+<li><strong>Git</strong> (Version control)</li>
+</ul>
+<h3 id="used-throughout-course">Used Throughout Course</h3>
+<ul>
+<li><strong>Orchestration:</strong> Celery, Redis</li>
+<li><strong>Frameworks:</strong> LangGraph, LangChain, Haystack</li>
+<li><strong>Vector Databases:</strong> Qdrant, Weaviate, Pinecone</li>
+<li><strong>Serving:</strong> vLLM, TensorRT-LLM</li>
+<li><strong>Observability:</strong> LangSmith, Arize Phoenix,
+OpenTelemetry</li>
+<li><strong>Cloud:</strong> Azure OpenAI, AWS Bedrock (optional)</li>
+</ul>
+<hr />
+<h2 id="required-reading">Required Reading</h2>
+<ol type="1">
+<li><strong>Primary Text:</strong> Course Notes (provided)</li>
+<li><strong>Reference:</strong> “Designing Machine Learning Systems” by
+Chip Huyen</li>
+<li><strong>Security:</strong> OWASP Top 10 for LLM Applications</li>
+<li><strong>Papers:</strong> Selected papers provided per week</li>
+</ol>
+<hr />
+<h2 id="office-hours">Office Hours</h2>
+<ul>
+<li><strong>Instructor:</strong> 2 hours/week (scheduled)</li>
+<li><strong>TAs:</strong> 4 hours/week (rotating schedule)</li>
+<li><strong>Week 9:</strong> Extended office hours for final project
+support</li>
+</ul>
+<hr />
+<h2 id="academic-integrity">Academic Integrity</h2>
+<p>AI assistants may be used for learning and coding assistance. All
+submitted work must be understood and explainable by the student.
+Plagiarism detection tools will be used on code submissions.</p>
+<hr />
+<h2 id="accessibility">Accessibility</h2>
+<p>Please contact the instructor within the first week if you require
+accommodations.</p>
+</body>
+</html>
