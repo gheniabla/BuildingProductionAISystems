@@ -40,15 +40,17 @@ Very hard, it turns out.
 
 #### Why Projects Fail
 
-Based on analysis of hundreds of AI project post-mortems, here are the primary failure modes:
+The failure rate for AI projects is strikingly high. According to a [RAND Corporation study](https://www.rand.org/pubs/research_reports/RRA2680-1.html), over 80% of AI projects fail — roughly double the rate of non-AI IT projects. [IDC reports](https://www.cio.com/article/3850763/88-of-ai-pilots-fail-to-reach-production-but-thats-not-all-on-it.html) that 88% of AI proof-of-concepts never reach production. A [2025 MIT study](https://mitsloan.mit.edu/ideas-made-to-matter/companies-are-not-seeing-profits-generative-ai) found that only about 5% of generative AI initiatives deliver sustained, measurable business impact.
 
-| Failure Mode | Frequency | Example |
-|--------------|-----------|---------|
-| **Cost Overruns** | 34% | "We burned through $50K in API costs during launch week" |
-| **Quality Regressions** | 28% | "Users complained the AI got dumber after our update" |
-| **Security Incidents** | 15% | "Someone jailbroke our bot and it leaked customer data" |
-| **Scaling Failures** | 12% | "The system fell over at 100 concurrent users" |
-| **Integration Issues** | 11% | "We couldn't connect it to our existing systems" |
+The common failure modes include:
+
+| Failure Mode | Example |
+|--------------|---------|
+| **Cost Overruns** | Uncontrolled API spending, no rate limiting or cost caps |
+| **Quality Regressions** | Model updates or prompt changes degrade user-facing output |
+| **Security Incidents** | Prompt injection, jailbreaks, data leakage through LLM outputs |
+| **Scaling Failures** | Systems that work for demos collapse under concurrent load |
+| **Integration Issues** | AI components that can't connect to existing data and workflows |
 
 ---
 
@@ -147,23 +149,21 @@ Each layer serves a critical purpose:
 
 ---
 
-### 1.3 War Story: The $100,000 Weekend
+### 1.3 War Story: When AI Costs Spiral
 
-> **🔥 War Story**
+> **🔥 War Story: Klarna's AI Customer Service Pivot**
 >
-> A startup launched their AI-powered customer service bot on a Friday afternoon. The CEO posted about it on Twitter. It went viral.
+> In 2024, Klarna made headlines by replacing 700 customer service agents with an AI assistant powered by OpenAI. The company reported the AI handled two-thirds of customer chats in its first month — equivalent to the work of 700 agents — and projected $40 million in annual savings. ([Source](https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/))
 >
-> By Saturday morning, they had 50,000 users. By Saturday night, they had spent $40,000 in API costs. By Sunday, they had hit $100,000.
+> But by 2025, CEO Sebastian Siemiatkowski acknowledged the company had gone too far. Users encountered inaccurate answers, robotic tone, circular interactions, and inability to escalate to a human. The overemphasis on cost-cutting had compromised service quality. Klarna began rehiring human agents. ([Source](https://www.bbc.com/news/articles/c0jnlp3vy8zo))
 >
-> What went wrong?
+> The lessons for production AI systems:
 >
-> 1. **No rate limiting**: Users could send unlimited requests
-> 2. **No cost caps**: No circuit breakers on spending
-> 3. **Inefficient prompts**: Each request used 8,000 tokens when 2,000 would suffice
-> 4. **No caching**: Identical questions hit the API every time
-> 5. **Model misselection**: Used GPT-4 when GPT-3.5 was sufficient for 80% of queries
->
-> The fix took two days. The lessons lasted forever.
+> 1. **Cost optimization without quality monitoring is dangerous**: Savings mean nothing if users leave
+> 2. **AI needs guardrails and escalation paths**: Not every request can be handled by a model
+> 3. **Evaluation systems are essential** (Week 3): You can't improve what you don't measure
+> 4. **Human-in-the-loop matters**: Hybrid systems often outperform pure AI or pure human approaches
+> 5. **Observability is not optional** (Week 8): You need to detect quality regressions before users do
 
 ---
 
@@ -218,10 +218,10 @@ from enum import Enum
 from dataclasses import dataclass
 
 class ModelTier(Enum):
-    FAST_CHEAP = "gpt-3.5-turbo"          # ~500ms, $0.002/1K tokens
-    BALANCED = "gpt-4o-mini"               # ~800ms, $0.01/1K tokens
-    QUALITY = "gpt-4o"                     # ~1200ms, $0.03/1K tokens
-    MAXIMUM = "claude-3-opus"              # ~2000ms, $0.075/1K tokens
+    FAST_CHEAP = "gpt-4o-mini"             # ~500ms, $0.15/$0.60 per 1M tokens
+    BALANCED = "gpt-4o"                    # ~800ms, $2.50/$10 per 1M tokens
+    QUALITY = "claude-3-5-sonnet"          # ~1200ms, $3/$15 per 1M tokens
+    MAXIMUM = "claude-3-opus"              # ~2000ms, $15/$75 per 1M tokens
 
 @dataclass
 class RequestContext:
@@ -466,12 +466,14 @@ class ModelContext:
     cost_per_1k_output: float
 
 MODELS = {
+    # Pricing as of mid-2025 — check https://openai.com/api/pricing/
+    # and https://www.anthropic.com/pricing for current rates
     "gpt-4o": ModelContext(
         name="gpt-4o",
         context_window=128_000,
         output_limit=16_384,
-        cost_per_1k_input=0.005,
-        cost_per_1k_output=0.015
+        cost_per_1k_input=0.0025,
+        cost_per_1k_output=0.010
     ),
     "claude-3-5-sonnet": ModelContext(
         name="claude-3-5-sonnet",
@@ -503,7 +505,7 @@ def estimate_cost(
 # Example: Estimate cost for a typical RAG query
 # 2000 tokens context + 500 token query + 1000 token response
 cost = estimate_cost("gpt-4o", input_tokens=2500, output_tokens=1000)
-print(f"Estimated cost: ${cost:.4f}")  # ~$0.0275
+print(f"Estimated cost: ${cost:.4f}")  # ~$0.0163
 ```
 
 > **💡 Tip:** Always track token usage in production. Unexpected token counts are often the first sign of prompt injection attacks or system bugs.
@@ -521,7 +523,7 @@ print(f"Estimated cost: ${cost:.4f}")  # ~$0.0275
    ────────────────────┼────────────────────────────────┼──────────────────────
    Upfront Cost        │  $0                            │  $10K-$500K (GPUs)
    ────────────────────┼────────────────────────────────┼──────────────────────
-   Marginal Cost       │  $0.002-$0.06 per 1K tokens    │  Compute + Ops
+   Marginal Cost       │  $0.00015-$0.015 per 1K tokens  │  Compute + Ops
    ────────────────────┼────────────────────────────────┼──────────────────────
    Latency             │  500ms-3s (network + compute)  │  100ms-1s (compute)
    ────────────────────┼────────────────────────────────┼──────────────────────
@@ -665,8 +667,9 @@ class LLMResponse:
     def _calculate_cost(self) -> float:
         """Calculate cost based on model and token usage."""
         # Simplified cost calculation
+        # Per 1K token rates — check provider pricing pages for current rates
         costs = {
-            "gpt-4o": (0.005, 0.015),
+            "gpt-4o": (0.0025, 0.010),
             "gpt-4o-mini": (0.00015, 0.0006),
             "claude-3-5-sonnet": (0.003, 0.015),
         }
