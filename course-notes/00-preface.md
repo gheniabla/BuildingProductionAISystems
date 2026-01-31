@@ -77,7 +77,7 @@ async def stream_response(request: ChatRequest) -> AsyncIterator[str]:
 
 **War Story boxes** share real incidents:
 
-> **🔥 War Story:** A major fintech company's AI assistant once told a user their account balance was negative $3 billion. The model had seen "-$3B" in training data referring to corporate debt and helpfully provided that number. The fix took 10 minutes. The PR recovery took 6 months.
+> **🔥 War Story:** In February 2023, Google demonstrated its Bard AI chatbot in a promotional ad. Bard confidently stated that the James Webb Space Telescope "took the very first pictures of a planet outside of our own solar system" — which was factually incorrect. The error was spotted by astronomers on social media within hours. Alphabet's stock dropped over $100 billion in market value in a single day. The fix was trivial; the reputational damage was not. ([Source](https://time.com/6254226/alphabet-google-bard-100-billion-ai-error/))
 
 ---
 
