@@ -28,7 +28,7 @@ Very hard, it turns out.
 │   Time: 2 hours                      Time: 2-6 months                       │
 │   Team: 1 person                     Team: 3-10 people                      │
 │                                                                             │
-│                        90% of projects die here                             │
+│                    Most projects die here (see stats below)                  │
 │                               ────────┼────────                             │
 │                                       ↓                                     │
 │                              "The Valley of                                 │

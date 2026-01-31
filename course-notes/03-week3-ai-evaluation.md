@@ -6,15 +6,13 @@
 
 ### 5.1 Why Evaluation is the Hardest Problem
 
-> **🔥 War Story**
+> **🔥 War Story: Air Canada's Chatbot Gives Wrong Refund Policy**
 >
-> A team built an AI assistant for customer support. Internal testing showed 95% satisfaction. They launched with confidence.
+> In 2022, a customer asked Air Canada's AI chatbot about bereavement travel discounts. The chatbot told him he could book a full-price ticket and apply for a bereavement discount retroactively within 90 days. This was wrong — Air Canada's actual policy does not allow retroactive bereavement refunds.
 >
-> Within a week, support tickets about the AI were up 300%. The AI was confidently providing wrong information about refund policies, sometimes contradicting itself within the same conversation.
+> The customer booked the flight, applied for the discount, and was denied. Air Canada argued the chatbot was a "separate legal entity" responsible for its own actions. In February 2024, the British Columbia Civil Resolution Tribunal ruled against Air Canada, holding the airline liable for its chatbot's misinformation and awarding the customer $812 CAD in damages. ([Source](https://www.cbc.ca/news/canada/british-columbia/air-canada-chatbot-lawsuit-1.7116416))
 >
-> What happened? Their test set was 50 hand-picked examples that didn't represent real user queries. They tested happy paths. Users found edge cases, adversarial prompts, and ambiguous requests the team never anticipated.
->
-> The fix required building a proper evaluation system—and six months of rebuilding user trust.
+> The core failure: Air Canada had no evaluation system to verify the accuracy of its chatbot's responses against actual company policies. A proper evaluation suite — testing the bot against real policy documents and edge cases — would have caught this before a single customer was affected.
 
 **The evaluation paradox:** You can't improve what you can't measure, but measuring AI quality is fundamentally difficult.
 

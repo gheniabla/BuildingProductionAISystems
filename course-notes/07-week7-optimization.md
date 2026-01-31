@@ -30,20 +30,24 @@
                              │
    Cost/Latency ◄────────────┴────────────► Low
 
-   TECHNIQUE COMPARISON:
+   TECHNIQUE COMPARISON (approximate ranges — actual results vary by model and workload):
    ┌─────────────────┬──────────────┬─────────────┬──────────────┬───────────┐
    │ Technique       │ Speedup      │ Memory      │ Quality Loss │ Effort    │
    ├─────────────────┼──────────────┼─────────────┼──────────────┼───────────┤
-   │ FP16            │ 2x           │ 50%         │ Negligible   │ Trivial   │
-   │ INT8 (PTQ)      │ 2-4x         │ 75%         │ Low          │ Low       │
-   │ INT8 (QAT)      │ 2-4x         │ 75%         │ Minimal      │ Medium    │
-   │ INT4 (GPTQ)     │ 3-4x         │ 87%         │ Moderate     │ Medium    │
-   │ Pruning         │ 1.5-3x       │ 40-80%      │ Variable     │ High      │
-   │ Distillation    │ 5-100x       │ 90%+        │ Moderate     │ High      │
-   │ Flash Attention │ 2-4x         │ 50%+        │ None         │ Trivial   │
-   │ Prompt Caching  │ 10-100x*     │ -           │ None         │ Low       │
+   │ FP16/BF16       │ ~2x          │ ~50%        │ Negligible   │ Trivial   │
+   │ INT8 (PTQ)      │ ~2-4x        │ ~75%        │ Low          │ Low       │
+   │ INT8 (QAT)      │ ~2-4x        │ ~75%        │ Minimal      │ Medium    │
+   │ INT4 (GPTQ/AWQ) │ ~3-4x        │ ~87%        │ Moderate     │ Medium    │
+   │ Pruning         │ ~1.5-3x      │ 40-80%      │ Variable     │ High      │
+   │ Distillation    │ Varies*      │ Varies*     │ Moderate     │ High      │
+   │ Flash Attention │ ~2-4x**      │ O(N)→attn   │ None (exact) │ Trivial   │
+   │ Prompt Caching  │ Prefix only***│ -           │ None         │ Low       │
    └─────────────────┴──────────────┴─────────────┴──────────────┴───────────┘
-   * For repeated prefixes
+   *   Distillation speedup depends entirely on student model size vs teacher
+   **  Flash Attention speedup per Dao et al. (2022), applies to attention
+       computation specifically, not full model inference
+   *** Prompt caching eliminates re-computation of cached prefixes; overall
+       request speedup depends on the ratio of cached to new tokens
 ```
 
 **Figure 12.1:** Optimization techniques comparison
@@ -504,7 +508,7 @@ def format_for_openai_finetuning(
    1. PREFIX CACHING (Same prefix across requests)
       ┌──────────────────────────────────────────────────────────────────────┐
       │  Best for: System prompts, few-shot examples, shared context        │
-      │  Savings: 50-90% token reduction                                    │
+      │  Savings: Significant token reduction for shared prefixes             │
       │  Implementation: Most LLM APIs support this natively                │
       └──────────────────────────────────────────────────────────────────────┘
 
@@ -1081,7 +1085,7 @@ In this week, we covered:
 
 - Quantization offers easy wins: INT8 is often "free" quality-wise
 - Distillation enables custom small models for specific tasks
-- Caching can reduce costs by 50-90% for repetitive workloads
+- Caching can significantly reduce costs for repetitive workloads (savings depend on prefix reuse ratio)
 - Batching is essential for throughput but adds latency complexity
 
 ---

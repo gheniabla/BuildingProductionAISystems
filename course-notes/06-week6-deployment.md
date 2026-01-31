@@ -732,10 +732,14 @@ class ModelRouter:
    ┌─────────────────┬──────────────────────────────────────────────────────┐
    │ Metric          │ vLLM vs Baseline                                     │
    ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ Throughput      │ 2-24x higher (depending on workload)                 │
-   │ Memory Usage    │ Near-optimal (95%+ utilization)                      │
+   │ Throughput      │ 2-24x higher (depending on workload)*                │
+   │ Memory Usage    │ Near-optimal GPU memory utilization*                 │
    │ Latency (p50)   │ Similar or better                                    │
    │ Latency (p99)   │ Significantly better due to less queuing            │
+   │                 │                                                      │
+   │ * Per the vLLM paper: Kwon et al., "Efficient Memory Management      │
+   │   for Large Language Model Serving with PagedAttention" (2023)        │
+   │   https://arxiv.org/abs/2309.06180                                    │
    └─────────────────┴──────────────────────────────────────────────────────┘
 ```
 

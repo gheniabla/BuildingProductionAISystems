@@ -123,8 +123,10 @@ Retrieval-Augmented Generation (RAG) is the most common pattern for adding custo
    Best For         │ General     │ Knowledge   │ Simplicity  │ Small scale,
                     │ purpose     │ graphs      │ managed     │ existing PG
    ─────────────────┼─────────────┼─────────────┼─────────────┼──────────────
-   Pricing          │ Open source │ Open source │ $70/mo+     │ Postgres
-                    │ or $25/mo+  │ or $25/mo+  │             │ costs
+   Pricing          │ Open source │ Open source │ Managed     │ Postgres
+                    │ or managed  │ or managed  │ only        │ costs
+                    │ cloud       │ cloud       │             │
+   (Check provider websites for current cloud pricing — rates change frequently)
 
 
    DECISION FLOWCHART:

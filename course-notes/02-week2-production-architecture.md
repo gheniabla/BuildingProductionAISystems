@@ -20,8 +20,12 @@ FastAPI has become the de facto standard for AI application backends. Here's why
    Django             │  ~3,500        │  ~50ms          │  Django 4.0+
    Express (Node.js)  │  ~12,000       │  ~15ms          │  Native
 
-   Note: Benchmarks vary by workload. AI workloads are typically I/O bound,
-   making async support more important than raw throughput.
+   Note: Approximate figures for simple JSON responses on modern hardware.
+   Actual performance varies significantly by workload, hardware, and
+   configuration. See TechEmpower Framework Benchmarks for comparative
+   data: https://www.techempower.com/benchmarks/
+   AI workloads are typically I/O bound, making async support more
+   important than raw throughput.
 ```
 
 **Key advantages for AI workloads:**
@@ -34,7 +38,7 @@ FastAPI has become the de facto standard for AI application backends. Here's why
 
 ### 3.2 Pydantic v2: Data Validation at the Speed of Rust
 
-Pydantic v2 was rewritten in Rust, making it 5-50x faster than v1. This matters for AI systems where you validate many requests:
+Pydantic v2 was rewritten in Rust, making it [5-50x faster than v1](https://docs.pydantic.dev/latest/concepts/performance/) depending on the validation task. This matters for AI systems where you validate many requests:
 
 ```python
 # src/models/requests.py
@@ -235,9 +239,15 @@ class ChatCompletionResponse(BaseModel):
     def cost_usd(self) -> float:
         """Estimated cost in USD."""
         # Simplified cost calculation
-        cost_per_1k = {"gpt-4o": 0.01, "gpt-4o-mini": 0.0004}
-        rate = cost_per_1k.get(self.model, 0.001)
-        return (self.usage.total_tokens / 1000) * rate
+        # Per 1K token rates (mid-2025) — check https://openai.com/api/pricing/
+        input_rates = {"gpt-4o": 0.0025, "gpt-4o-mini": 0.00015}
+        output_rates = {"gpt-4o": 0.010, "gpt-4o-mini": 0.0006}
+        in_rate = input_rates.get(self.model, 0.0025)
+        out_rate = output_rates.get(self.model, 0.010)
+        return (
+            (self.usage.prompt_tokens / 1000) * in_rate +
+            (self.usage.completion_tokens / 1000) * out_rate
+        )
 
 
 class ErrorResponse(BaseModel):

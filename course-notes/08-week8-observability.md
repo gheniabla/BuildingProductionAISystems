@@ -6,13 +6,13 @@
 
 ### 14.1 Why AI Systems Need Specialized Observability
 
-> **🔥 War Story**
+> **🔥 War Story: Silent Degradation in Production AI**
 >
-> A team noticed their AI chatbot's quality dropped dramatically over a weekend. Response times looked fine. Error rates were normal. The system seemed healthy.
+> A 2025 empirical study of 156 high-impact production AI incidents at a major tech company found that the majority of failures were **silent** — systems appeared healthy by traditional metrics (latency, error rates, uptime) while producing wrong outputs. Approximately 75% of incidents involved non-reasoning LLMs, with the remainder affecting embedding models used for retrieval and ranking. ([Source](https://arxiv.org/abs/2511.07424))
 >
-> After hours of debugging, they discovered the issue: a dependency update had changed the embedding model's default batch size, causing embeddings to be truncated. The retrieval still "worked"—it just returned wrong documents.
+> Separately, researchers have documented that 91% of ML models degrade over time in production due to data drift, feature mismatches between training and serving, and stale retrieval layers. A poisoned or stale retrieval pipeline can be worse than no retrieval at all — it feeds the model the wrong context with high confidence. ([Source](https://www.montecarlodata.com/blog-top-5-ai-reliability-pitfalls/))
 >
-> Traditional observability missed this because there were no errors, timeouts, or obvious failures. Only AI-specific observability—tracking embedding dimensions, retrieval relevance scores, and response quality—would have caught it.
+> Traditional observability misses these failures because there are no errors, timeouts, or obvious crashes. Only AI-specific observability — tracking embedding dimensions, retrieval relevance scores, response quality metrics, and data lineage across the full pipeline — catches silent degradation before users do.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -450,9 +450,10 @@ class CostEvent:
     request_id: str | None = None
 
 
-# Cost rates per 1K tokens (as of course creation)
+# Cost rates per 1K tokens (mid-2025)
+# Check https://openai.com/api/pricing/ and https://www.anthropic.com/pricing
 COST_RATES = {
-    "gpt-4o": {"input": 0.005, "output": 0.015},
+    "gpt-4o": {"input": 0.0025, "output": 0.010},
     "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
     "claude-3-opus": {"input": 0.015, "output": 0.075},
