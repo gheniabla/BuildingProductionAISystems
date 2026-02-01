@@ -1,19 +1,19 @@
 flowchart TD
-    GW["API Gateway\n(Router)"]:::gateway
+    GW["API Gateway<br/>(Router)"]:::gateway
 
-    GW --> Fast["Fast/Cheap\nRequests"]:::service
-    GW --> Quality["Quality\nRequests"]:::service
-    GW --> Fallback["Fallback\nPool"]:::service
+    GW --> Fast["Fast/Cheap<br/>Requests"]:::service
+    GW --> Quality["Quality<br/>Requests"]:::service
+    GW --> Fallback["Fallback<br/>Pool"]:::service
 
-    Fast --> VLLM["Self-hosted vLLM\n(Llama-70b)"]:::data
-    Quality --> GPT4["OpenAI\nGPT-4"]:::external
-    Fallback --> Claude["Anthropic\nClaude"]:::external
+    Fast --> VLLM["Self-hosted vLLM<br/>(Llama-70b)"]:::data
+    Quality --> GPT4["OpenAI<br/>GPT-4"]:::external
+    Fallback --> Claude["Anthropic<br/>Claude"]:::external
 
     subgraph Rules ["ROUTING RULES"]
-        R1["Enterprise + Complex\n--> GPT-4"]:::client
-        R2["Tokens < 2000 + Low Latency\n--> Self-hosted vLLM"]:::client
-        R3["OpenAI Rate Limit Hit\n--> Anthropic fallback"]:::client
-        R4["Default\n--> GPT-4-mini cost-optimized"]:::client
+        R1["Enterprise + Complex<br/>--> GPT-4"]:::client
+        R2["Tokens < 2000 + Low Latency<br/>--> Self-hosted vLLM"]:::client
+        R3["OpenAI Rate Limit Hit<br/>--> Anthropic fallback"]:::client
+        R4["Default<br/>--> GPT-4-mini cost-optimized"]:::client
     end
 
     GW -. "evaluates" .-> Rules

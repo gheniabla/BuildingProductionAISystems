@@ -2,11 +2,11 @@ flowchart TB
     TITLE["LLM-AS-JUDGE ARCHITECTURE"]
 
     subgraph pipeline ["EVALUATION PIPELINE"]
-        INPUT["Input\n#40;query#41;"]
-        MA["Model A\nResponse"]
-        MB["Model B\nResponse"]
-        JUDGE["JUDGE MODEL\n#40;GPT-4, etc#41;\n───────────\nRubric Template"]
-        OUTPUT["Structured\nEvaluation Output"]
+        INPUT["Input<br/>#40;query#41;"]
+        MA["Model A<br/>Response"]
+        MB["Model B<br/>Response"]
+        JUDGE["JUDGE MODEL<br/>#40;GPT-4, etc#41;<br/>───────────<br/>Rubric Template"]
+        OUTPUT["Structured<br/>Evaluation Output"]
 
         INPUT --> MA
         INPUT --> MB

@@ -1,10 +1,10 @@
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    Q1{"Do you process\n>1M requests/day?"}:::service
+    Q1{"Do you process<br/>>1M requests/day?"}:::service
     Q1 -->|YES| SH1["Consider self-hosted"]:::external
-    Q1 -->|NO| Q2{"Do you have strict\ndata residency needs?"}:::service
-    Q2 -->|YES| SH2["Self-hosted\nor Azure OpenAI"]:::external
-    Q2 -->|NO| API["Use API\n(OpenAI / Anthropic)"]:::data
+    Q1 -->|NO| Q2{"Do you have strict<br/>data residency needs?"}:::service
+    Q2 -->|YES| SH2["Self-hosted<br/>or Azure OpenAI"]:::external
+    Q2 -->|NO| API["Use API<br/>(OpenAI / Anthropic)"]:::data
 
     classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef data fill:#10B981,stroke:#047857,color:#FFFFFF

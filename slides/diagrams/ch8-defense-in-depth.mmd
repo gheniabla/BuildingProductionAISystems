@@ -1,19 +1,19 @@
 flowchart TB
     TITLE["DEFENSE IN DEPTH FOR AI SYSTEMS"]
 
-    L1["Layer 1: PERIMETER\n──────────────────\nWAF (Web Application Firewall)\nDDoS protection\nRate limiting\nIP reputation filtering"]
+    L1["Layer 1: PERIMETER<br/>──────────────────<br/>WAF (Web Application Firewall)<br/>DDoS protection<br/>Rate limiting<br/>IP reputation filtering"]
 
-    L2["Layer 2: INPUT VALIDATION\n─────────────────────────\nSchema validation (Pydantic)\nLength limits\nCharacter filtering\nPrompt injection detection"]
+    L2["Layer 2: INPUT VALIDATION<br/>─────────────────────────<br/>Schema validation (Pydantic)<br/>Length limits<br/>Character filtering<br/>Prompt injection detection"]
 
-    L3["Layer 3: PRE-PROCESSING\n────────────────────────\nPII detection and masking\nInput normalization\nLanguage detection\nContent classification"]
+    L3["Layer 3: PRE-PROCESSING<br/>────────────────────────<br/>PII detection and masking<br/>Input normalization<br/>Language detection<br/>Content classification"]
 
-    L4["Layer 4: MODEL CONTEXT\n───────────────────────\nSystem prompt hardening\nContext isolation\nPrivilege separation\nRAG source validation"]
+    L4["Layer 4: MODEL CONTEXT<br/>───────────────────────<br/>System prompt hardening<br/>Context isolation<br/>Privilege separation<br/>RAG source validation"]
 
-    L5["Layer 5: OUTPUT VALIDATION\n──────────────────────────\nContent filtering\nFormat validation\nPII leakage detection\nHallucination detection"]
+    L5["Layer 5: OUTPUT VALIDATION<br/>──────────────────────────<br/>Content filtering<br/>Format validation<br/>PII leakage detection<br/>Hallucination detection"]
 
-    L6["Layer 6: ACTION AUTHORIZATION\n─────────────────────────────\nTool/function call validation\nLeast privilege enforcement\nHuman-in-the-loop for sensitive actions\nAudit logging"]
+    L6["Layer 6: ACTION AUTHORIZATION<br/>─────────────────────────────<br/>Tool/function call validation<br/>Least privilege enforcement<br/>Human-in-the-loop for sensitive actions<br/>Audit logging"]
 
-    L7["Layer 7: MONITORING\n────────────────────\nAnomaly detection\nAttack pattern recognition\nUsage analytics\nIncident response automation"]
+    L7["Layer 7: MONITORING<br/>────────────────────<br/>Anomaly detection<br/>Attack pattern recognition<br/>Usage analytics<br/>Incident response automation"]
 
     TITLE --> L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
 

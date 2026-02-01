@@ -1,17 +1,17 @@
 flowchart TD
-    Ingress["Ingress Controller\n(NGINX / Traefik / ALB)"]:::gateway
+    Ingress["Ingress Controller<br/>(NGINX / Traefik / ALB)"]:::gateway
 
     Ingress --> Svc
 
     subgraph NS ["NAMESPACE: ai-prod"]
-        Svc["SERVICE: api\n(ClusterIP / LoadBalancer)"]:::service
+        Svc["SERVICE: api<br/>(ClusterIP / LoadBalancer)"]:::service
 
         Svc --> Pod1 & Pod2 & Pod3
 
         subgraph Deploy ["DEPLOYMENT: ai-api"]
-            Pod1["Pod 1\nAPI Container"]:::client
-            Pod2["Pod 2\nAPI Container"]:::client
-            Pod3["Pod 3\nAPI Container"]:::client
+            Pod1["Pod 1<br/>API Container"]:::client
+            Pod2["Pod 2<br/>API Container"]:::client
+            Pod3["Pod 3<br/>API Container"]:::client
         end
 
         subgraph Workers ["DEPLOYMENT: celery-worker"]
@@ -20,12 +20,12 @@ flowchart TD
         end
 
         subgraph GPU ["STATEFULSET: vllm-gpu"]
-            VLLM["vLLM Pod - GPU Node\nNVIDIA A100 80GB\nModel: Llama-2-70b\nPVC: model-storage 500GB"]:::external
+            VLLM["vLLM Pod - GPU Node<br/>NVIDIA A100 80GB<br/>Model: Llama-2-70b<br/>PVC: model-storage 500GB"]:::external
         end
 
-        CM["ConfigMap\napp-config, prompts"]:::data
-        Secret["Secret\napi-keys, db-creds"]:::data
-        HPA["HPA\nmin: 2, max: 10\ntarget: 70% CPU"]:::observability
+        CM["ConfigMap<br/>app-config, prompts"]:::data
+        Secret["Secret<br/>api-keys, db-creds"]:::data
+        HPA["HPA<br/>min: 2, max: 10<br/>target: 70% CPU"]:::observability
     end
 
     HPA -. scales .-> Deploy

@@ -9,16 +9,16 @@ flowchart TB
     subgraph withcache ["WITH PROMPT CACHING — 4000+ tokens saved, 66% reduction"]
         direction TB
         r1_wc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc_cache["Process and Cache"]
-        proc_cache --> kvcache["KV Cache\nStores computed attention states\nSystem prompt only"]
-        kvcache --> r2_wc["Req 2: Cached + User: Help\nProcess only new tokens"]
-        kvcache --> r3_wc["Req 3: Cached + User: Thanks\nProcess only new tokens"]
+        proc_cache --> kvcache["KV Cache<br/>Stores computed attention states<br/>System prompt only"]
+        kvcache --> r2_wc["Req 2: Cached + User: Help<br/>Process only new tokens"]
+        kvcache --> r3_wc["Req 3: Cached + User: Thanks<br/>Process only new tokens"]
     end
 
     subgraph strategies ["CACHING STRATEGIES"]
         direction TB
-        prefix["1. PREFIX CACHING\nSame prefix across requests\nBest for: System prompts, few-shot examples\nSavings: Significant token reduction\nImpl: Most LLM APIs support natively"]
-        semantic["2. SEMANTIC CACHING\nSimilar queries\nBest for: FAQ-style queries, repeated questions\nSavings: 100% for cache hits\nImpl: Embed query, search cache, return if similar"]
-        response_c["3. RESPONSE CACHING\nExact matches\nBest for: Deterministic queries, idempotent ops\nSavings: 100% for cache hits\nImpl: Hash request, lookup, return cached response"]
+        prefix["1. PREFIX CACHING<br/>Same prefix across requests<br/>Best for: System prompts, few-shot examples<br/>Savings: Significant token reduction<br/>Impl: Most LLM APIs support natively"]
+        semantic["2. SEMANTIC CACHING<br/>Similar queries<br/>Best for: FAQ-style queries, repeated questions<br/>Savings: 100% for cache hits<br/>Impl: Embed query, search cache, return if similar"]
+        response_c["3. RESPONSE CACHING<br/>Exact matches<br/>Best for: Deterministic queries, idempotent ops<br/>Savings: 100% for cache hits<br/>Impl: Hash request, lookup, return cached response"]
     end
 
     nocache --> withcache --> strategies

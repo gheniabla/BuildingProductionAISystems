@@ -3,7 +3,7 @@ flowchart TD
         T1["Traffic"]:::client
         T1 -- "99%" --> S1["Stable"]:::service
         T1 -- "1%" --> C1["Canary"]:::external
-        Cr1["error_rate < 0.1%\nlatency_p99 < 2x stable"]:::observability
+        Cr1["error_rate < 0.1%<br/>latency_p99 < 2x stable"]:::observability
     end
 
     P1 -- "Pass" --> P2
@@ -29,14 +29,14 @@ flowchart TD
     subgraph P4 ["PHASE 4: Full Rollout"]
         T4["Traffic"]:::client
         T4 -- "100%" --> N4["New Version"]:::data
-        Note4["Keep old version 24h\nfor quick rollback"]:::observability
+        Note4["Keep old version 24h<br/>for quick rollback"]:::observability
     end
 
     P1 -- "Fail" --> RB["AUTOMATIC ROLLBACK"]:::gateway
     P2 -- "Fail" --> RB
     P3 -- "Fail" --> RB
 
-    RB --- Triggers["Error rate > 1%\np99 latency > 3x baseline\nCost per request > 2x baseline\nQuality score drops > 10%\nManual trigger from on-call"]:::gateway
+    RB --- Triggers["Error rate > 1%<br/>p99 latency > 3x baseline<br/>Cost per request > 2x baseline<br/>Quality score drops > 10%<br/>Manual trigger from on-call"]:::gateway
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF

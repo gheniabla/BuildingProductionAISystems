@@ -1,8 +1,8 @@
 flowchart TD
     subgraph concept ["KNOWLEDGE DISTILLATION — CONCEPT"]
         direction LR
-        teacher["Teacher Model\nGPT-4 / Claude · 175B params\nHigh accuracy · High cost · 2000ms"]
-        student["Student Model\nGPT-4-mini · 8B params\nGood accuracy · Low cost · 200ms"]
+        teacher["Teacher Model<br/>GPT-4 / Claude · 175B params<br/>High accuracy · High cost · 2000ms"]
+        student["Student Model<br/>GPT-4-mini · 8B params<br/>Good accuracy · Low cost · 200ms"]
         teacher -- "Transfer Knowledge" --> student
     end
 
@@ -13,19 +13,19 @@ flowchart TD
         step1 --> query["Query"]:::client
         query --> teacherLLM["Teacher"]:::gateway
         teacherLLM --> response["High-quality response"]:::data
-        response --> step2["Step 2: Train student on teacher outputs\nTarget: teacher response · Loss: KL divergence + task loss"]:::service
-        step2 --> step3["Step 3: Evaluate and iterate\nCompare student vs teacher · Add hard examples · Repeat"]:::service
+        response --> step2["Step 2: Train student on teacher outputs<br/>Target: teacher response · Loss: KL divergence + task loss"]:::service
+        step2 --> step3["Step 3: Evaluate and iterate<br/>Compare student vs teacher · Add hard examples · Repeat"]:::service
     end
 
     process --> strategies
 
     subgraph strategies ["DISTILLATION STRATEGIES"]
         direction LR
-        s1["Response\nDistillation"]:::external
-        s2["Logit\nDistillation"]:::external
-        s3["Feature\nDistillation"]:::external
-        s4["Chain-of-Thought\nDistillation"]:::external
-        s5["Selective\nDistillation"]:::external
+        s1["Response<br/>Distillation"]:::external
+        s2["Logit<br/>Distillation"]:::external
+        s3["Feature<br/>Distillation"]:::external
+        s4["Chain-of-Thought<br/>Distillation"]:::external
+        s5["Selective<br/>Distillation"]:::external
     end
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF

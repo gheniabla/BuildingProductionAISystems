@@ -1,7 +1,7 @@
 flowchart LR
-    PQ["Primary\nQueue"] --> RQ["Retry\nQueue"] --> DLQ["Dead\nLetter Queue"]
-    DLQ --> MR["Manual\nReview"]
-    DLQ --> AS["Alert\nSystem"]
+    PQ["Primary<br/>Queue"] --> RQ["Retry<br/>Queue"] --> DLQ["Dead<br/>Letter Queue"]
+    DLQ --> MR["Manual<br/>Review"]
+    DLQ --> AS["Alert<br/>System"]
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF

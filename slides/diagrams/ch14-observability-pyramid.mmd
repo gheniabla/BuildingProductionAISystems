@@ -1,17 +1,17 @@
 flowchart TB
     subgraph comparison ["TRADITIONAL vs AI OBSERVABILITY"]
         direction LR
-        traditional["Traditional Observability\n--- What ops teams track ---\nRequest latency\nError rates\nThroughput\nCPU/Memory usage\nDatabase queries"]
-        ai_obs["AI Observability\n--- What AI teams need ---\nAll traditional metrics PLUS:\nToken usage and costs\nModel response quality\nRetrieval relevance\nEmbedding drift\nPrompt variations\nHallucination detection\nSafety violations\nA/B test metrics"]
+        traditional["Traditional Observability<br/>--- What ops teams track ---<br/>Request latency<br/>Error rates<br/>Throughput<br/>CPU/Memory usage<br/>Database queries"]
+        ai_obs["AI Observability<br/>--- What AI teams need ---<br/>All traditional metrics PLUS:<br/>Token usage and costs<br/>Model response quality<br/>Retrieval relevance<br/>Embedding drift<br/>Prompt variations<br/>Hallucination detection<br/>Safety violations<br/>A/B test metrics"]
         traditional -- "extends" --> ai_obs
     end
 
     subgraph pyramid ["THE AI OBSERVABILITY PYRAMID"]
         direction TB
-        quality["QUALITY METRICS\nLLM-as-judge scores\nUser feedback, accuracy"]
-        traces["AI TRACES\nLLM calls, RAG steps\nTool invocations"]
-        business["BUSINESS METRICS\nTokens, costs\nLatency, throughput"]
-        infra["INFRASTRUCTURE\nLogs, metrics\nTraditional APM"]
+        quality["QUALITY METRICS<br/>LLM-as-judge scores<br/>User feedback, accuracy"]
+        traces["AI TRACES<br/>LLM calls, RAG steps<br/>Tool invocations"]
+        business["BUSINESS METRICS<br/>Tokens, costs<br/>Latency, throughput"]
+        infra["INFRASTRUCTURE<br/>Logs, metrics<br/>Traditional APM"]
 
         quality --> traces --> business --> infra
     end

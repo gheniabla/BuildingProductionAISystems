@@ -1,11 +1,11 @@
 flowchart LR
     subgraph chart ["OPTIMIZATION TECHNIQUE OVERVIEW: Quality vs Cost"]
         direction TB
-        FP32["FP32\nBest quality, highest cost"]
-        FP16["FP16\nMinimal quality loss"]
-        FP8["FP8\nGood balance"]
-        INT8["INT8\nSignificant speedup"]
-        INT4["INT4\nMax compression, quality loss"]
+        FP32["FP32<br/>Best quality, highest cost"]
+        FP16["FP16<br/>Minimal quality loss"]
+        FP8["FP8<br/>Good balance"]
+        INT8["INT8<br/>Significant speedup"]
+        INT4["INT4<br/>Max compression, quality loss"]
 
         FP32 --> FP16 --> FP8 --> INT8 --> INT4
     end

@@ -1,9 +1,9 @@
 flowchart TB
-    API["FastAPI\n(API)"]
-    Broker["Redis\n(Broker)"]
-    Workers["Celery\nWorkers"]
-    TaskQ["Task Queue\n(Priority)"]
-    ResultB["Result Backend\n(Redis/DB)"]
+    API["FastAPI<br/>(API)"]
+    Broker["Redis<br/>(Broker)"]
+    Workers["Celery<br/>Workers"]
+    TaskQ["Task Queue<br/>(Priority)"]
+    ResultB["Result Backend<br/>(Redis/DB)"]
 
     API -- "enqueue" --> Broker
     Broker -- "dequeue" --> Workers

@@ -7,7 +7,7 @@ flowchart TD
 
     subgraph HNSW ["1. HNSW (Hierarchical Navigable Small World)"]
         H_L3["Layer 3 (Sparse)"]:::service --> H_L2["Layer 2 (Medium)"]:::service --> H_L1["Layer 1 (Dense)"]:::service
-        H_L1 --> H_Perf["O(n log n) build\nO(log n) query\nHigh memory"]:::external
+        H_L1 --> H_Perf["O(n log n) build<br/>O(log n) query<br/>High memory"]:::external
         H_Perf --> H_Best["Best for: Most production use cases"]:::client
     end
 
@@ -15,12 +15,12 @@ flowchart TD
         I_C1["Cell 1"]:::service --> I_V1["Vectors"]:::data
         I_C2["Cell 2"]:::service --> I_V2["Vectors"]:::data
         I_Ck["Cell k"]:::service --> I_Vk["Vectors"]:::data
-        I_V1 --> I_Perf["O(n) build\nO(n/k) query\nMedium memory"]:::external
+        I_V1 --> I_Perf["O(n) build<br/>O(n/k) query<br/>Medium memory"]:::external
         I_Perf --> I_Best["Best for: Memory-constrained, frequently rebuilt"]:::client
     end
 
     subgraph FLAT ["3. Flat (Brute Force)"]
-        F_Perf["O(n) query\nLow memory"]:::external
+        F_Perf["O(n) query<br/>Low memory"]:::external
         F_Perf --> F_Best["Best for: less than 10K vectors or accuracy-critical"]:::client
     end
 

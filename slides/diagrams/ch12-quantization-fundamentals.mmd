@@ -1,17 +1,17 @@
 flowchart TB
     subgraph formats ["PRECISION FORMATS"]
         direction TB
-        fp32["FP32 — 32 bits\nSign: 1, Exponent: 8, Mantissa: 23\nRange: +/-3.4 x 10^38"]
-        fp16["FP16 — 16 bits\nSign: 1, Exponent: 5, Mantissa: 10\nRange: +/-65504"]
-        bf16["BF16 — 16 bits\nSign: 1, Exponent: 8, Mantissa: 7\nRange: Same as FP32, less precision"]
-        int8["INT8 — 8 bits\nRange: -128 to 127"]
+        fp32["FP32 — 32 bits<br/>Sign: 1, Exponent: 8, Mantissa: 23<br/>Range: +/-3.4 x 10^38"]
+        fp16["FP16 — 16 bits<br/>Sign: 1, Exponent: 5, Mantissa: 10<br/>Range: +/-65504"]
+        bf16["BF16 — 16 bits<br/>Sign: 1, Exponent: 8, Mantissa: 7<br/>Range: Same as FP32, less precision"]
+        int8["INT8 — 8 bits<br/>Range: -128 to 127"]
     end
 
     subgraph process ["QUANTIZATION PROCESS"]
         direction TB
-        orig["Original FP32 weights\n-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
-        scale["Determine scale and zero-point\nscale = (max - min) / 255 = 0.0074\nzero_point = round(-min / scale) = 135"]
-        quant["Quantized INT8 weights\n103, 255, 133, 212, 0, 152, 197, 28"]
+        orig["Original FP32 weights<br/>-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
+        scale["Determine scale and zero-point<br/>scale = (max - min) / 255 = 0.0074<br/>zero_point = round(-min / scale) = 135"]
+        quant["Quantized INT8 weights<br/>103, 255, 133, 212, 0, 152, 197, 28"]
         orig --> scale --> quant
     end
 
@@ -24,7 +24,7 @@ flowchart TB
 
     subgraph qat ["2. Quantization-Aware Training — QAT"]
         direction LR
-        fake_quant["Training with\nFake Quantization"] --> quantized_qat["Quantized Model"]
+        fake_quant["Training with<br/>Fake Quantization"] --> quantized_qat["Quantized Model"]
         qat_desc["Model learns to be robust · Better quality · Requires retraining"]
         fake_quant -.-> qat_desc
     end

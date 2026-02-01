@@ -5,18 +5,18 @@ flowchart TB
         direction TB
         subgraph row1 [" "]
             direction LR
-            RECON["RECONNAISSANCE\n─────────────\nVictim research\nSearch victim-owned websites\nAcquire public ML artifacts"]
-            ACCESS["INITIAL ACCESS\n─────────────\nExploit public-facing app\nPhishing\nSupply chain compromise"]
+            RECON["RECONNAISSANCE<br/>─────────────<br/>Victim research<br/>Search victim-owned websites<br/>Acquire public ML artifacts"]
+            ACCESS["INITIAL ACCESS<br/>─────────────<br/>Exploit public-facing app<br/>Phishing<br/>Supply chain compromise"]
         end
         subgraph row2 [" "]
             direction LR
-            EXEC["EXECUTION\n─────────\nUser execution\nPrompt injection\nSupply chain compromise"]
-            PERSIST["PERSISTENCE\n──────────\nPoison training data\nBackdoor ML model\nCompromise ML infrastructure"]
+            EXEC["EXECUTION<br/>─────────<br/>User execution<br/>Prompt injection<br/>Supply chain compromise"]
+            PERSIST["PERSISTENCE<br/>──────────<br/>Poison training data<br/>Backdoor ML model<br/>Compromise ML infrastructure"]
         end
         subgraph row3 [" "]
             direction LR
-            EVASION["EVASION\n───────\nEvade ML model\nAdversarial perturbation\nObfuscate malicious content"]
-            IMPACT["IMPACT\n──────\nModel DoS\nData poisoning\nModel theft\nSpam via ML"]
+            EVASION["EVASION<br/>───────<br/>Evade ML model<br/>Adversarial perturbation<br/>Obfuscate malicious content"]
+            IMPACT["IMPACT<br/>──────<br/>Model DoS<br/>Data poisoning<br/>Model theft<br/>Spam via ML"]
         end
     end
 

@@ -10,19 +10,19 @@ flowchart TD
     QRew --> RL
 
     subgraph RL ["RETRIEVAL LAYER"]
-        VS["Vector Search\n(Semantic)"]:::data --> KS["Keyword Search\n(BM25/Sparse)"]:::data --> HF["Hybrid Fusion\n(RRF/Linear)"]:::data
+        VS["Vector Search<br/>(Semantic)"]:::data --> KS["Keyword Search<br/>(BM25/Sparse)"]:::data --> HF["Hybrid Fusion<br/>(RRF/Linear)"]:::data
     end
 
     RL --> RK
 
     subgraph RK ["RANKING LAYER"]
-        RR["Reranker Model\n(Cross-Encoder)"]:::service --> CF["Contextual Filtering\n(Metadata, Access)"]:::service
+        RR["Reranker Model<br/>(Cross-Encoder)"]:::service --> CF["Contextual Filtering<br/>(Metadata, Access)"]:::service
     end
 
     RK --> CA
 
     subgraph CA ["CONTEXT ASSEMBLY"]
-        CADesc["Context window management\nChunk ordering\nSource attribution\nToken counting"]:::observability
+        CADesc["Context window management<br/>Chunk ordering<br/>Source attribution<br/>Token counting"]:::observability
     end
 
     CA --> GEN

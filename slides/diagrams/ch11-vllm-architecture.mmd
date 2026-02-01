@@ -1,27 +1,27 @@
 flowchart TD
     subgraph API ["API Layer"]
-        EP["OpenAI-compatible endpoints\n/v1/completions\n/v1/chat/completions"]:::gateway
+        EP["OpenAI-compatible endpoints<br/>/v1/completions<br/>/v1/chat/completions"]:::gateway
     end
 
     API --> SCHED
 
     subgraph SCHED ["Scheduler & Batching"]
-        CB["Continuous Batching\nNew requests start as soon as old ones finish\n\nTraditional: slots idle until batch completes\nContinuous: slots reused immediately"]:::service
+        CB["Continuous Batching<br/>New requests start as soon as old ones finish<br/><br/>Traditional: slots idle until batch completes<br/>Continuous: slots reused immediately"]:::service
     end
 
     SCHED --> PAGED
 
     subgraph PAGED ["PagedAttention Memory Manager"]
-        KV["KV Cache Management\n\nTraditional: pre-allocated, wasted space\nPagedAttention: dynamic page allocation/freeing\nMemory pages shared across requests"]:::observability
+        KV["KV Cache Management<br/><br/>Traditional: pre-allocated, wasted space<br/>PagedAttention: dynamic page allocation/freeing<br/>Memory pages shared across requests"]:::observability
     end
 
     PAGED --> GPUS
 
     subgraph GPUS ["GPU Execution"]
-        G0["GPU 0\nTensor Parallel"]:::external
-        G1["GPU 1\nTensor Parallel"]:::external
-        G2["GPU 2\nTensor Parallel"]:::external
-        G3["GPU 3\nTensor Parallel"]:::external
+        G0["GPU 0<br/>Tensor Parallel"]:::external
+        G1["GPU 1<br/>Tensor Parallel"]:::external
+        G2["GPU 2<br/>Tensor Parallel"]:::external
+        G3["GPU 3<br/>Tensor Parallel"]:::external
     end
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF

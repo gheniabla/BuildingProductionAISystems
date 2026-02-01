@@ -1,13 +1,13 @@
 flowchart TD
     A{"Need >10M vectors?"}:::gateway
 
-    A -- NO --> B{"Already using\nPostgreSQL?"}:::gateway
-    B -- YES --> C["pgvector\n(simple addition)"]:::data
-    B -- NO --> D{"Want managed\nservice?"}:::gateway
+    A -- NO --> B{"Already using<br/>PostgreSQL?"}:::gateway
+    B -- YES --> C["pgvector<br/>(simple addition)"]:::data
+    B -- NO --> D{"Want managed<br/>service?"}:::gateway
     D -- YES --> E["Pinecone"]:::external
-    D -- NO --> F["Qdrant\n(best overall)"]:::service
+    D -- NO --> F["Qdrant<br/>(best overall)"]:::service
 
-    A -- YES --> G{"Need graph\ncapabilities?"}:::gateway
+    A -- YES --> G{"Need graph<br/>capabilities?"}:::gateway
     G -- YES --> H["Weaviate"]:::service
     G -- NO --> I["Qdrant"]:::service
 
