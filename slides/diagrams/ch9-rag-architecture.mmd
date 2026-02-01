@@ -1,0 +1,39 @@
+flowchart TD
+    Q["Query"]:::client
+
+    Q --> QExp["Query Expansion"]:::service
+    Q --> QEmb["Query Embedding"]:::service
+    Q --> QRew["Query Rewriting"]:::service
+
+    QExp --> RL
+    QEmb --> RL
+    QRew --> RL
+
+    subgraph RL ["RETRIEVAL LAYER"]
+        VS["Vector Search\n(Semantic)"]:::data --> KS["Keyword Search\n(BM25/Sparse)"]:::data --> HF["Hybrid Fusion\n(RRF/Linear)"]:::data
+    end
+
+    RL --> RK
+
+    subgraph RK ["RANKING LAYER"]
+        RR["Reranker Model\n(Cross-Encoder)"]:::service --> CF["Contextual Filtering\n(Metadata, Access)"]:::service
+    end
+
+    RK --> CA
+
+    subgraph CA ["CONTEXT ASSEMBLY"]
+        CADesc["Context window management\nChunk ordering\nSource attribution\nToken counting"]:::observability
+    end
+
+    CA --> GEN
+
+    subgraph GEN ["GENERATION"]
+        Prompt["System Prompt + Context + Q"]:::external --> LLM["LLM"]:::service --> Resp["Response + Citations"]:::client
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF

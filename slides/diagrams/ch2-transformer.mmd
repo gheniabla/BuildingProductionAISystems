@@ -1,0 +1,19 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Input["Input: 'The cat sat on the'"]:::client
+    Input --> Tokenize["TOKENIZATION\nTokens → IDs: 1234, 5678, 9012, 345, 1234"]:::service
+    Tokenize --> Embed["TOKEN EMBEDDING + POSITIONAL\nEach token → 4096-dim vector\nPosition info encoded"]:::service
+    Embed --> TransBlock
+
+    subgraph TransBlock["TRANSFORMER BLOCK x N (Repeated 32-128 times)"]
+        Attention["Self-Attention"]:::service
+        FFN["Feed-Forward Network"]:::service
+        Attention --> FFN
+    end
+
+    FFN -->|"Loop back\nfor N layers"| Attention
+    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX\nProject to vocabulary size\nNext token: 'mat' (p=0.34)"]:::external
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF

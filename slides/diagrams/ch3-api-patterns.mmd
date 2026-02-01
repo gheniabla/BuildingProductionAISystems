@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    rect rgb(209, 250, 229)
+        Note over C,S: 1. SYNCHRONOUS (Simple, blocking)\nBest for: less than 5s responses, simple UX
+        C->>+S: POST /chat/completions
+        S-->>-C: Response
+    end
+
+    rect rgb(254, 243, 199)
+        Note over C,S: 2. STREAMING (SSE)\nBest for: Chat interfaces, real-time feedback
+        C->>+S: POST /chat/completions (stream=true)
+        S-->>C: token
+        S-->>C: token
+        S-->>C: token
+        S-->>-C: [DONE]
+    end
+
+    rect rgb(209, 250, 229)
+        Note over C,S: 3. ASYNC (Job-based)\nBest for: Long-running tasks, batch processing
+        C->>+S: POST /chat/completions
+        S-->>-C: 202 + job_id
+        C->>+S: GET /jobs/{id}
+        S-->>-C: status / result
+    end
+
+    rect rgb(254, 243, 199)
+        Note over C,S: 4. WEBHOOK (Callback)\nBest for: External integrations, guaranteed delivery
+        C->>+S: POST /chat/completions + callback_url
+        S-->>-C: 202 Accepted
+        Note right of S: Server processes request...
+        S->>C: POST result to callback_url
+    end

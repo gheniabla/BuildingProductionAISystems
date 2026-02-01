@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph classification ["INCIDENT CLASSIFICATION"]
+        direction TB
+        sev1["SEV1 - Critical\nComplete service outage\nData breach or security incident\nOver 50% of requests failing\nResponse: Immediate, all-hands"]
+        sev2["SEV2 - High\nSignificant quality degradation over 20% drop\nMajor feature broken\nCost spike over 200% normal\nResponse: Within 1 hour, primary team"]
+        sev3["SEV3 - Medium\nMinor quality issues\nElevated latency\nPartial feature degradation\nResponse: Within 4 hours, business hours"]
+        sev4["SEV4 - Low\nCosmetic issues\nNon-critical bugs\nResponse: Next business day"]
+    end
+
+    trigger["TRIGGER: Quality score drops\nover 15% for over 10 minutes"]
+
+    step1["Step 1: ASSESS — 0-5 min\nCheck quality dashboard for affected dimensions\nIdentify if degradation is global or segment-specific\nReview recent deployments, last 24h\nCheck external dependencies like OpenAI status"]
+    step2["Step 2: MITIGATE — 5-15 min\nIf recent deployment: Rollback\nIf external dependency: Switch to fallback model\nEnable degraded mode, cached responses\nIf rate limiting: Scale up workers\nEnable request shedding for non-critical traffic"]
+    step3["Step 3: COMMUNICATE — 15-30 min\nUpdate status page\nNotify affected customers if user-facing\nPost in #incidents Slack channel\nPage additional responders if needed"]
+    step4["Step 4: RESOLVE — 30+ min\nIdentify root cause\nImplement fix with proper testing\nDeploy fix through normal pipeline\nVerify quality scores recovered\nUpdate status page: resolved"]
+    step5["Step 5: POST-MORTEM — 24-48h\nSchedule blameless post-mortem\nDocument timeline and actions\nIdentify what worked and what did not\nDefine action items to prevent recurrence\nAdd regression test cases\nUpdate runbooks if needed"]
+
+    classification --> trigger
+    trigger --> step1 --> step2 --> step3 --> step4 --> step5
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class sev1 gateway
+    class sev2 external
+    class sev3 service
+    class sev4 data
+    class trigger gateway
+    class step1 client
+    class step2 service
+    class step3 external
+    class step4 observability
+    class step5 data

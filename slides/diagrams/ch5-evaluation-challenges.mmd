@@ -1,0 +1,63 @@
+flowchart TB
+    subgraph title [" "]
+        direction TB
+        H["WHY AI EVALUATION IS HARD"]
+    end
+
+    subgraph comparison ["Traditional Software vs AI Systems"]
+        direction LR
+        subgraph trad ["Traditional Software"]
+            T1["f#40;x#41; = y #40;deterministic#41;"]
+            T2["Binary: works or doesn't"]
+            T3["Unit tests sufficient"]
+            T4["Same input → same output"]
+            T5["Clear specification"]
+            T6["Easy to automate"]
+        end
+        subgraph ai ["AI Systems"]
+            A1["f#40;x#41; ≈ y #40;probabilistic#41;"]
+            A2["Continuous: quality spectrum"]
+            A3["Need statistical evaluation"]
+            A4["Same input → different outputs"]
+            A5["Fuzzy requirements"]
+            A6["Often needs human judgment"]
+        end
+    end
+
+    subgraph spectrum ["THE QUALITY SPECTRUM"]
+        direction LR
+        WRONG["WRONG\n#40;Easy to detect#41;"]
+        FI["Factually\nincorrect"]
+        PC["Partially\ncorrect"]
+        CPW["Correct but\npoorly worded"]
+        GE["Good\nenough"]
+        PERFECT["PERFECT\n#40;Hard to define#41;"]
+        WRONG --> FI --> PC --> CPW --> GE --> PERFECT
+    end
+
+    subgraph dims ["EVALUATION DIMENSIONS"]
+        D1["Correctness — Is the information factually accurate?"]
+        D2["Relevance — Does it answer the actual question?"]
+        D3["Coherence — Is it logically structured and readable?"]
+        D4["Helpfulness — Does it actually help the user?"]
+        D5["Safety — Is it free from harmful content?"]
+        D6["Consistency — Does it align with other responses?"]
+    end
+
+    title --> comparison --> spectrum --> dims
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class H service
+    class T1,T2,T3,T4,T5,T6 data
+    class A1,A2,A3,A4,A5,A6 external
+    class WRONG gateway
+    class FI,PC,CPW external
+    class GE data
+    class PERFECT client
+    class D1,D2,D3,D4,D5,D6 observability

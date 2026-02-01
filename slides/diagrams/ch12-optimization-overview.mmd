@@ -1,0 +1,28 @@
+flowchart LR
+    subgraph chart ["OPTIMIZATION TECHNIQUE OVERVIEW: Quality vs Cost"]
+        direction TB
+        FP32["FP32\nBest quality, highest cost"]
+        FP16["FP16\nMinimal quality loss"]
+        FP8["FP8\nGood balance"]
+        INT8["INT8\nSignificant speedup"]
+        INT4["INT4\nMax compression, quality loss"]
+
+        FP32 --> FP16 --> FP8 --> INT8 --> INT4
+    end
+
+    quality["Higher Quality"] -.-> FP32
+    INT4 -.-> cost["Lower Cost / Latency"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class FP32 data
+    class FP16 data
+    class FP8 service
+    class INT8 external
+    class INT4 gateway
+    class quality,cost client

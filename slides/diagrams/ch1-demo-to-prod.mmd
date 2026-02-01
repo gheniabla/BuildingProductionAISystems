@@ -1,0 +1,23 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    subgraph DEMO["DEMO STAGE"]
+        D1["Works on laptop · Single user · Happy path only"]:::data
+        D2["Cost ignored · Security ignored"]:::data
+        D3["'It usually works' · Notebook cells"]:::data
+        D4["Time: 2 hours · Team: 1 person"]:::data
+    end
+
+    DEMO -->|"Most projects die here"| VALLEY
+    VALLEY["⚠ The Valley of Production Death"]:::danger
+    VALLEY --> PROD
+
+    subgraph PROD["PRODUCTION STAGE"]
+        P1["Works at scale · Thousands concurrent · All edge cases"]:::service
+        P2["Cost optimized · Defense in depth"]:::service
+        P3["99.9% reliability · Production services"]:::service
+        P4["Time: 2-6 months · Team: 3-10 people"]:::service
+    end
+
+    classDef danger fill:#EF4444,stroke:#B91C1C,color:#FFFFFF,font-size:16px
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF

@@ -1,0 +1,34 @@
+flowchart TB
+    TITLE["DEFENSE IN DEPTH FOR AI SYSTEMS"]
+
+    L1["Layer 1: PERIMETER\n──────────────────\nWAF (Web Application Firewall)\nDDoS protection\nRate limiting\nIP reputation filtering"]
+
+    L2["Layer 2: INPUT VALIDATION\n─────────────────────────\nSchema validation (Pydantic)\nLength limits\nCharacter filtering\nPrompt injection detection"]
+
+    L3["Layer 3: PRE-PROCESSING\n────────────────────────\nPII detection and masking\nInput normalization\nLanguage detection\nContent classification"]
+
+    L4["Layer 4: MODEL CONTEXT\n───────────────────────\nSystem prompt hardening\nContext isolation\nPrivilege separation\nRAG source validation"]
+
+    L5["Layer 5: OUTPUT VALIDATION\n──────────────────────────\nContent filtering\nFormat validation\nPII leakage detection\nHallucination detection"]
+
+    L6["Layer 6: ACTION AUTHORIZATION\n─────────────────────────────\nTool/function call validation\nLeast privilege enforcement\nHuman-in-the-loop for sensitive actions\nAudit logging"]
+
+    L7["Layer 7: MONITORING\n────────────────────\nAnomaly detection\nAttack pattern recognition\nUsage analytics\nIncident response automation"]
+
+    TITLE --> L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class TITLE service
+    class L1 gateway
+    class L2 external
+    class L3 client
+    class L4 service
+    class L5 data
+    class L6 observability
+    class L7 observability

@@ -1,0 +1,19 @@
+flowchart TD
+    A{"Need >10M vectors?"}:::gateway
+
+    A -- NO --> B{"Already using\nPostgreSQL?"}:::gateway
+    B -- YES --> C["pgvector\n(simple addition)"]:::data
+    B -- NO --> D{"Want managed\nservice?"}:::gateway
+    D -- YES --> E["Pinecone"]:::external
+    D -- NO --> F["Qdrant\n(best overall)"]:::service
+
+    A -- YES --> G{"Need graph\ncapabilities?"}:::gateway
+    G -- YES --> H["Weaviate"]:::service
+    G -- NO --> I["Qdrant"]:::service
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF

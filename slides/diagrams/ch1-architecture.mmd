@@ -1,0 +1,61 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Users["Users"]:::client
+    Users -->|HTTPS| LB
+
+    subgraph Edge["EDGE LAYER"]
+        LB["Load Balancer"]:::gateway
+        CDN["CDN / Cache"]:::gateway
+        WAF["WAF / Security"]:::gateway
+    end
+
+    LB --> GW
+
+    subgraph GW["API GATEWAY LAYER"]
+        RL["Rate Limiting"]:::gateway
+        Auth["Auth / AuthZ"]:::gateway
+        RV["Request Validation"]:::gateway
+    end
+
+    GW --> APP
+
+    subgraph APP["APPLICATION LAYER — FastAPI"]
+        Chat["/chat endpoint"]:::service
+        Embed["/embed endpoint"]:::service
+        Retrieve["/retrieve endpoint"]:::service
+        Health["/health endpoint"]:::service
+    end
+
+    APP --> Guards
+    APP --> Services
+
+    subgraph Guards["GUARDRAILS"]
+        InputSan["Input Sanitizer"]:::service
+        OutputVal["Output Validator"]:::service
+        PII["PII Filter"]:::service
+    end
+
+    subgraph Services["SERVICES"]
+        LLMSvc["LLM Service"]:::service
+        RetSvc["Retrieval Service"]:::service
+        EmbSvc["Embedding Service"]:::service
+    end
+
+    Services --> LLMAPIs
+    Services --> VectorDB
+
+    subgraph LLMAPIs["LLM APIs"]
+        OpenAI["OpenAI"]:::external
+        Anthropic["Anthropic"]:::external
+    end
+
+    subgraph VectorDB["VECTOR DB"]
+        Qdrant["Qdrant"]:::data
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF

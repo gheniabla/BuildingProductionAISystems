@@ -1,0 +1,3 @@
+html: true
+theme: theme/course-theme.css
+output: dist/

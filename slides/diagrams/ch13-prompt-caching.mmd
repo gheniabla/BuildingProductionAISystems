@@ -1,0 +1,39 @@
+flowchart TB
+    subgraph nocache ["WITHOUT CACHING — 6000+ redundant system tokens"]
+        direction TB
+        r1_nc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc1["Process ALL tokens"]
+        r2_nc["Req 2: System Prompt 2000 tok + User: Help"] --> proc2["Process ALL tokens"]
+        r3_nc["Req 3: System Prompt 2000 tok + User: Thanks"] --> proc3["Process ALL tokens"]
+    end
+
+    subgraph withcache ["WITH PROMPT CACHING — 4000+ tokens saved, 66% reduction"]
+        direction TB
+        r1_wc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc_cache["Process and Cache"]
+        proc_cache --> kvcache["KV Cache\nStores computed attention states\nSystem prompt only"]
+        kvcache --> r2_wc["Req 2: Cached + User: Help\nProcess only new tokens"]
+        kvcache --> r3_wc["Req 3: Cached + User: Thanks\nProcess only new tokens"]
+    end
+
+    subgraph strategies ["CACHING STRATEGIES"]
+        direction TB
+        prefix["1. PREFIX CACHING\nSame prefix across requests\nBest for: System prompts, few-shot examples\nSavings: Significant token reduction\nImpl: Most LLM APIs support natively"]
+        semantic["2. SEMANTIC CACHING\nSimilar queries\nBest for: FAQ-style queries, repeated questions\nSavings: 100% for cache hits\nImpl: Embed query, search cache, return if similar"]
+        response_c["3. RESPONSE CACHING\nExact matches\nBest for: Deterministic queries, idempotent ops\nSavings: 100% for cache hits\nImpl: Hash request, lookup, return cached response"]
+    end
+
+    nocache --> withcache --> strategies
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class r1_nc,r2_nc,r3_nc gateway
+    class proc1,proc2,proc3 gateway
+    class r1_wc client
+    class proc_cache service
+    class kvcache observability
+    class r2_wc,r3_wc data
+    class prefix,semantic,response_c external

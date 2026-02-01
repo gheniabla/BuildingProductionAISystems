@@ -1,0 +1,38 @@
+flowchart TD
+    subgraph concept ["KNOWLEDGE DISTILLATION — CONCEPT"]
+        direction LR
+        teacher["Teacher Model\nGPT-4 / Claude · 175B params\nHigh accuracy · High cost · 2000ms"]
+        student["Student Model\nGPT-4-mini · 8B params\nGood accuracy · Low cost · 200ms"]
+        teacher -- "Transfer Knowledge" --> student
+    end
+
+    concept --> step1
+
+    subgraph process ["DISTILLATION PROCESS"]
+        step1["Step 1: Generate training data"]:::service
+        step1 --> query["Query"]:::client
+        query --> teacherLLM["Teacher"]:::gateway
+        teacherLLM --> response["High-quality response"]:::data
+        response --> step2["Step 2: Train student on teacher outputs\nTarget: teacher response · Loss: KL divergence + task loss"]:::service
+        step2 --> step3["Step 3: Evaluate and iterate\nCompare student vs teacher · Add hard examples · Repeat"]:::service
+    end
+
+    process --> strategies
+
+    subgraph strategies ["DISTILLATION STRATEGIES"]
+        direction LR
+        s1["Response\nDistillation"]:::external
+        s2["Logit\nDistillation"]:::external
+        s3["Feature\nDistillation"]:::external
+        s4["Chain-of-Thought\nDistillation"]:::external
+        s5["Selective\nDistillation"]:::external
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+
+    class teacher gateway
+    class student data

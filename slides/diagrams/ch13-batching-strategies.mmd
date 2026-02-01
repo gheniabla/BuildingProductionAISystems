@@ -1,0 +1,45 @@
+flowchart TB
+    subgraph static ["1. STATIC BATCHING\nWait for fixed batch size, then process\nPros: Simple, predictable\nCons: Latency for early requests"]
+        direction LR
+        s_r1["R1"] --> s_wait["Wait for\nbatch size"]
+        s_r2["R2"] --> s_wait
+        s_r3["R3"] --> s_wait
+        s_r4["R4"] --> s_wait
+        s_wait --> s_batch["Batch Process"] --> s_resp["All responses"]
+    end
+
+    subgraph dynamic ["2. DYNAMIC BATCHING\nProcess after timeout or size threshold\nPros: Better latency, adapts to traffic\nCons: More complex, variable batch sizes"]
+        direction LR
+        d_r1["R1"] --> d_timeout["Timeout\ntrigger"]
+        d_r2["R2"] --> d_timeout
+        d_timeout --> d_batch1["Batch R1,R2"] --> d_resp1["Responses"]
+        d_r3["R3"] --> d_size["Size\nthreshold"]
+        d_r4["R4"] --> d_size
+        d_r5["R5"] --> d_size
+        d_r6["R6"] --> d_size
+        d_size --> d_batch2["Batch R3-R6"] --> d_resp2["Responses"]
+    end
+
+    subgraph continuous ["3. CONTINUOUS BATCHING — vLLM / TensorRT-LLM\nDynamically add/remove requests as they complete\nPros: Max GPU utilization, best throughput\nCons: Requires specialized serving engine"]
+        direction TB
+        c_state1["GPU: R1, R2, R3, __, __"]
+        c_event1["R2 completes, R4 joins"]
+        c_state2["GPU: R1, R4, R3, __, __"]
+        c_event2["R1 completes, R5 joins"]
+        c_state3["GPU: R5, R4, R3, __, __"]
+        c_state1 --> c_event1 --> c_state2 --> c_event2 --> c_state3
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class s_r1,s_r2,s_r3,s_r4,d_r1,d_r2,d_r3,d_r4,d_r5,d_r6 client
+    class s_wait,d_timeout,d_size external
+    class s_batch,d_batch1,d_batch2 service
+    class s_resp,d_resp1,d_resp2 data
+    class c_state1,c_state2,c_state3 service
+    class c_event1,c_event2 external

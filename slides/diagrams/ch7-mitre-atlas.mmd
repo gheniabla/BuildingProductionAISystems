@@ -1,0 +1,44 @@
+flowchart TB
+    TITLE["MITRE ATLAS FRAMEWORK"]
+
+    subgraph tactics ["Attack Tactics"]
+        direction TB
+        subgraph row1 [" "]
+            direction LR
+            RECON["RECONNAISSANCE\n─────────────\nVictim research\nSearch victim-owned websites\nAcquire public ML artifacts"]
+            ACCESS["INITIAL ACCESS\n─────────────\nExploit public-facing app\nPhishing\nSupply chain compromise"]
+        end
+        subgraph row2 [" "]
+            direction LR
+            EXEC["EXECUTION\n─────────\nUser execution\nPrompt injection\nSupply chain compromise"]
+            PERSIST["PERSISTENCE\n──────────\nPoison training data\nBackdoor ML model\nCompromise ML infrastructure"]
+        end
+        subgraph row3 [" "]
+            direction LR
+            EVASION["EVASION\n───────\nEvade ML model\nAdversarial perturbation\nObfuscate malicious content"]
+            IMPACT["IMPACT\n──────\nModel DoS\nData poisoning\nModel theft\nSpam via ML"]
+        end
+    end
+
+    subgraph actors ["THREAT ACTOR PROFILES"]
+        SK["Script Kiddies — Use known jailbreak prompts, low sophistication"]
+        COMP["Competitors — Model extraction, data gathering"]
+        CRIM["Cybercriminals — Data theft, fraud, ransomware deployment"]
+        NS["Nation States — Supply chain attacks, long-term access"]
+        RES["Researchers — Proof-of-concept exploits, disclosure"]
+    end
+
+    TITLE --> tactics --> actors
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class TITLE service
+    class RECON,ACCESS client
+    class EXEC,PERSIST external
+    class EVASION,IMPACT gateway
+    class SK,COMP,CRIM,NS,RES observability

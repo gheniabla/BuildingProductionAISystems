@@ -1,0 +1,24 @@
+{
+  "name": "production-ai-slides",
+  "version": "1.0.0",
+  "description": "Slide decks for Building Production AI Systems course",
+  "private": true,
+  "scripts": {
+    "diagrams": "for f in diagrams/*.mmd; do mmdc -i \"$f\" -o \"${f%.mmd}.svg\" -b transparent -w 1100 -H 600; done",
+    "build": "npm run diagrams && marp week*/*.md --output dist --pdf --allow-local-files",
+    "serve": "marp --input-dir . --server --watch",
+    "export": "npm run diagrams && marp week*/*.md --output dist --html --allow-local-files",
+    "serve:week1": "marp week1/*.md --server --watch --allow-local-files",
+    "serve:week2": "marp week2/*.md --server --watch --allow-local-files",
+    "serve:week3": "marp week3/*.md --server --watch --allow-local-files",
+    "serve:week4": "marp week4/*.md --server --watch --allow-local-files",
+    "serve:week5": "marp week5/*.md --server --watch --allow-local-files",
+    "serve:week6": "marp week6/*.md --server --watch --allow-local-files",
+    "serve:week7": "marp week7/*.md --server --watch --allow-local-files",
+    "serve:week8": "marp week8/*.md --server --watch --allow-local-files"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.1.1",
+    "@mermaid-js/mermaid-cli": "^11.12.0"
+  }
+}

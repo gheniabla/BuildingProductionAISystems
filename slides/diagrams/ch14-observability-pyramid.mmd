@@ -1,0 +1,33 @@
+flowchart TB
+    subgraph comparison ["TRADITIONAL vs AI OBSERVABILITY"]
+        direction LR
+        traditional["Traditional Observability\n--- What ops teams track ---\nRequest latency\nError rates\nThroughput\nCPU/Memory usage\nDatabase queries"]
+        ai_obs["AI Observability\n--- What AI teams need ---\nAll traditional metrics PLUS:\nToken usage and costs\nModel response quality\nRetrieval relevance\nEmbedding drift\nPrompt variations\nHallucination detection\nSafety violations\nA/B test metrics"]
+        traditional -- "extends" --> ai_obs
+    end
+
+    subgraph pyramid ["THE AI OBSERVABILITY PYRAMID"]
+        direction TB
+        quality["QUALITY METRICS\nLLM-as-judge scores\nUser feedback, accuracy"]
+        traces["AI TRACES\nLLM calls, RAG steps\nTool invocations"]
+        business["BUSINESS METRICS\nTokens, costs\nLatency, throughput"]
+        infra["INFRASTRUCTURE\nLogs, metrics\nTraditional APM"]
+
+        quality --> traces --> business --> infra
+    end
+
+    comparison --> pyramid
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class traditional client
+    class ai_obs service
+    class quality observability
+    class traces service
+    class business external
+    class infra data

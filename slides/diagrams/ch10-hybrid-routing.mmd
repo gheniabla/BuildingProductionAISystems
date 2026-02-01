@@ -1,0 +1,26 @@
+flowchart TD
+    GW["API Gateway\n(Router)"]:::gateway
+
+    GW --> Fast["Fast/Cheap\nRequests"]:::service
+    GW --> Quality["Quality\nRequests"]:::service
+    GW --> Fallback["Fallback\nPool"]:::service
+
+    Fast --> VLLM["Self-hosted vLLM\n(Llama-70b)"]:::data
+    Quality --> GPT4["OpenAI\nGPT-4"]:::external
+    Fallback --> Claude["Anthropic\nClaude"]:::external
+
+    subgraph Rules ["ROUTING RULES"]
+        R1["Enterprise + Complex\n--> GPT-4"]:::client
+        R2["Tokens < 2000 + Low Latency\n--> Self-hosted vLLM"]:::client
+        R3["OpenAI Rate Limit Hit\n--> Anthropic fallback"]:::client
+        R4["Default\n--> GPT-4-mini cost-optimized"]:::client
+    end
+
+    GW -. "evaluates" .-> Rules
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF

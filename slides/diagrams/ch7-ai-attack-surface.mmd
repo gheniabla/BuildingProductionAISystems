@@ -1,0 +1,51 @@
+flowchart TB
+    TITLE["AI SECURITY vs TRADITIONAL SECURITY"]
+
+    subgraph comparison ["Security Comparison"]
+        direction LR
+        subgraph trad ["Traditional Web Security"]
+            T1["Input → Deterministic Code → Output"]
+            T2["Clear boundaries"]
+            T3["Code review prevents bugs"]
+            T4["Inputs are typed/validated"]
+            T5["Attacks require technical skill"]
+        end
+        subgraph aisec ["AI-Specific Security"]
+            A1["Input → Model → Probabilistic Output"]
+            A2["Fuzzy boundaries"]
+            A3["Can't 'review' neural network"]
+            A4["Natural language = infinite inputs"]
+            A5["Social engineering via text"]
+        end
+    end
+
+    subgraph surface ["THE AI ATTACK SURFACE"]
+        UI["User Input"] -- "Prompt Injection, Jailbreaks" --> ATK1[ ]
+        UI --> RAG["Retrieval (RAG)"]
+        RAG -- "Poisoned Data, Indirect Injection" --> ATK2[ ]
+        RAG --> MODEL["Model"]
+        MODEL -- "Model Extraction, Adversarial Inputs" --> ATK3[ ]
+        MODEL --> OUT["Output"]
+        OUT -- "Data Leakage, Harmful Content" --> ATK4[ ]
+        OUT --> ACT["Actions (Agents)"]
+        ACT -- "Unauthorized Operations, Tool Misuse" --> ATK5[ ]
+    end
+
+    TITLE --> comparison --> surface
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+    classDef hidden fill:none,stroke:none,color:#EF4444,font-weight:bold
+
+    class TITLE service
+    class T1,T2,T3,T4,T5 data
+    class A1,A2,A3,A4,A5 external
+    class UI client
+    class RAG,MODEL service
+    class OUT observability
+    class ACT gateway
+    class ATK1,ATK2,ATK3,ATK4,ATK5 hidden

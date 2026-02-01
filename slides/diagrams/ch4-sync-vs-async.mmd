@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant W as Worker
+
+    rect rgb(254, 202, 202)
+        Note over W: SYNCHRONOUS (1 worker) — Total: 4500ms — 0.67 req/sec
+        W->>W: Req 1 (0–1000ms)
+        W->>W: Req 2 (1000–2000ms)
+        W->>W: Req 3 (2000–4500ms)
+    end
+
+    rect rgb(209, 250, 229)
+        Note over W: ASYNCHRONOUS (1 worker) — Total: 1500ms — 2.0 req/sec (3x!)
+        par Overlapped I/O
+            W->>W: Req 1 (CPU → wait → CPU)
+        and
+            W->>W: Req 2 (CPU → wait → CPU)
+        and
+            W->>W: Req 3 (CPU → wait → CPU)
+        end
+    end
+
+    Note over W: WHY THIS MATTERS FOR AI:\nTypical LLM API call:\n• Network round trip: 50–200ms\n• LLM inference: 500–3000ms\n• Response streaming: 100–500ms\nDuring this time, your server is just WAITING.\nAsync allows handling other requests during the wait.

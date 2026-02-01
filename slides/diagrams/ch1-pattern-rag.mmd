@@ -1,0 +1,16 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Query["Query"]:::client
+    Query --> Embed["Embedding Model"]:::service
+    Query --> Rewrite["Rewrite Query"]:::service
+    Embed --> VSearch["Vector DB Search"]:::data
+    Rewrite --> VSearch
+    VSearch --> Rerank["Reranker (Optional)"]:::service
+    Rerank --> Context["Context Assembly"]:::service
+    Context --> LLM["LLM Generation"]:::external
+    LLM --> Response["Response"]:::client
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF

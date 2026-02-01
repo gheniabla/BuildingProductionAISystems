@@ -1,0 +1,21 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    UserTask["User Task"]:::client --> AgentCore
+
+    subgraph AgentCore["AGENT CORE"]
+        Planning["Planning Module (Task Decomposition)"]:::service
+        Reasoning["Reasoning Loop (Think / Act / Observe)"]:::service
+        Planning --> Reasoning
+    end
+
+    Reasoning --> Search["Tool: Search"]:::external
+    Reasoning --> Code["Tool: Code Exec"]:::external
+    Reasoning --> API["Tool: API Call"]:::external
+
+    Search -->|"Observation"| Reasoning
+    Code -->|"Observation"| Reasoning
+    API -->|"Observation"| Reasoning
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF

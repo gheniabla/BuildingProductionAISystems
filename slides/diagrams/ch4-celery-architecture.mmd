@@ -1,0 +1,26 @@
+flowchart TB
+    API["FastAPI\n(API)"]
+    Broker["Redis\n(Broker)"]
+    Workers["Celery\nWorkers"]
+    TaskQ["Task Queue\n(Priority)"]
+    ResultB["Result Backend\n(Redis/DB)"]
+
+    API -- "enqueue" --> Broker
+    Broker -- "dequeue" --> Workers
+    Broker --> TaskQ
+    Broker --> ResultB
+    Workers --> ResultB
+    API -. "poll for results" .-> ResultB
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class API service
+    class Broker data
+    class Workers external
+    class TaskQ data
+    class ResultB data

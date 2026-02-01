@@ -1,0 +1,7 @@
+stateDiagram-v2
+    CLOSED --> OPEN : 5 failures
+    OPEN --> HALF_OPEN : 30s timeout
+    HALF_OPEN --> CLOSED : success
+    HALF_OPEN --> OPEN : failure
+
+    note right of HALF_OPEN : Test 1 request

@@ -1,0 +1,39 @@
+flowchart TB
+    TITLE["LLM-AS-JUDGE ARCHITECTURE"]
+
+    subgraph pipeline ["EVALUATION PIPELINE"]
+        INPUT["Input\n#40;query#41;"]
+        MA["Model A\nResponse"]
+        MB["Model B\nResponse"]
+        JUDGE["JUDGE MODEL\n#40;GPT-4, etc#41;\n───────────\nRubric Template"]
+        OUTPUT["Structured\nEvaluation Output"]
+
+        INPUT --> MA
+        INPUT --> MB
+        MA --> JUDGE
+        MB --> JUDGE
+        JUDGE --> OUTPUT
+    end
+
+    subgraph modes ["JUDGE MODES"]
+        M1["Single Rating — Rate response on 1-5 scale with justification"]
+        M2["Pairwise — Compare A vs B, pick better with reasoning"]
+        M3["Reference-based — Compare response to gold reference"]
+        M4["Criteria-based — Score on multiple dimensions independently"]
+    end
+
+    TITLE --> pipeline --> modes
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class TITLE service
+    class INPUT client
+    class MA,MB external
+    class JUDGE gateway
+    class OUTPUT data
+    class M1,M2,M3,M4 observability

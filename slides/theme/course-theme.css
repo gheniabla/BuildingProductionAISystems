@@ -1,0 +1,253 @@
+/* @theme course-theme */
+
+@import 'default';
+
+:root {
+  --color-primary: #4F46E5;
+  --color-primary-dark: #3730A3;
+  --color-accent: #3B82F6;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-text: #1F2937;
+  --color-text-light: #6B7280;
+  --color-bg: #FFFFFF;
+  --color-bg-light: #F9FAFB;
+  --color-border: #E5E7EB;
+}
+
+section {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 28px;
+  padding: 40px 60px 60px 60px;
+  border-top: 6px solid var(--color-primary);
+}
+
+/* ── Images: scale to fill available slide space ── */
+section img {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-height: 75%;
+  object-fit: contain;
+}
+
+/* Diagram slides: let images use nearly all vertical space */
+section.diagram img {
+  width: 100%;
+  max-height: 85%;
+  object-fit: contain;
+}
+
+/* Title / lead slides */
+section.lead {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  border-top: none;
+}
+
+section.lead h1 {
+  color: #FFFFFF;
+  font-size: 2.2em;
+  border-bottom: none;
+}
+
+section.lead h2 {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  font-size: 1.2em;
+  border-bottom: none;
+}
+
+section.lead p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Headings */
+h1 {
+  color: var(--color-primary);
+  font-size: 1.6em;
+  font-weight: 700;
+  border-bottom: 3px solid var(--color-primary);
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: var(--color-primary-dark);
+  font-size: 1.3em;
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+}
+
+h3 {
+  color: var(--color-text);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* ── Code blocks: light background for readable syntax highlighting ── */
+pre {
+  background: #F8F8FC;
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 0.54em;
+  line-height: 1.45;
+  border-left: 4px solid var(--color-primary);
+  border: 1px solid #E0E0EA;
+  border-left: 4px solid var(--color-primary);
+  overflow-x: auto;
+}
+
+pre code {
+  color: #1F2937;
+  background: transparent;
+}
+
+/* Syntax highlighting tokens (Marp uses highlight.js with light theme) */
+pre .hljs-keyword,
+pre .hljs-selector-tag { color: #7C3AED; font-weight: 600; }
+pre .hljs-string,
+pre .hljs-attr { color: #059669; }
+pre .hljs-number,
+pre .hljs-literal { color: #D97706; }
+pre .hljs-comment { color: #9CA3AF; font-style: italic; }
+pre .hljs-function,
+pre .hljs-title { color: #2563EB; }
+pre .hljs-built_in { color: #DC2626; }
+pre .hljs-params { color: #1F2937; }
+pre .hljs-type,
+pre .hljs-class .hljs-title { color: #0891B2; }
+
+code {
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+}
+
+/* Inline code */
+p code,
+li code,
+td code {
+  background: #EEF2FF;
+  color: var(--color-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78em;
+  margin: 12px 0;
+}
+
+thead {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+}
+
+td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--color-bg-light);
+}
+
+tbody tr:hover {
+  background: #EEF2FF;
+}
+
+/* Blockquotes — used for callouts */
+blockquote {
+  background: #EEF2FF;
+  border-left: 4px solid var(--color-primary);
+  padding: 12px 20px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88em;
+  margin: 12px 0;
+}
+
+blockquote strong {
+  color: var(--color-primary);
+}
+
+/* Lists */
+ul, ol {
+  margin: 8px 0;
+}
+
+li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+/* Two-column layout */
+section.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0 40px;
+}
+
+section.two-col h1 {
+  grid-column: 1 / -1;
+}
+
+/* Strong / emphasis */
+strong {
+  color: var(--color-primary-dark);
+}
+
+em {
+  color: var(--color-text-light);
+}
+
+/* Links */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Page number */
+section::after {
+  color: var(--color-text-light);
+  font-size: 0.6em;
+}
+
+/* Slide with diagram — give it breathing room */
+section.diagram {
+  padding: 24px 40px 40px 40px;
+}
+
+section.diagram h1 {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+}
+
+/* Small text helper */
+section .small {
+  font-size: 0.7em;
+  color: var(--color-text-light);
+}
