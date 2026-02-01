@@ -12,40 +12,28 @@ Very hard, it turns out.
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
-flowchart LR
+flowchart TD
     subgraph DEMO["DEMO STAGE"]
-        D1["Works on laptop"]
-        D2["Single user"]
-        D3["Happy path only"]
-        D4["Cost ignored"]
-        D5["Security ignored"]
-        D6["'It usually works'"]
-        D7["Notebook cells"]
-        D8["Time: 2 hours<br/>Team: 1 person"]
-    end
-
-    subgraph PROD["PRODUCTION STAGE"]
-        P1["Works at scale"]
-        P2["Thousands concurrent"]
-        P3["All edge cases"]
-        P4["Cost optimized"]
-        P5["Defense in depth"]
-        P6["99.9% reliability"]
-        P7["Production services"]
-        P8["Time: 2-6 months<br/>Team: 3-10 people"]
+        D1["Works on laptop · Single user · Happy path only"]:::data
+        D2["Cost ignored · Security ignored"]:::data
+        D3["'It usually works' · Notebook cells"]:::data
+        D4["Time: 2 hours · Team: 1 person"]:::data
     end
 
     DEMO -->|"Most projects die here"| VALLEY
-    VALLEY["The Valley of<br/>Production Death"]:::danger
+    VALLEY["⚠ The Valley of Production Death"]:::danger
     VALLEY --> PROD
 
-    classDef danger fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
-    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
-    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
-    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    subgraph PROD["PRODUCTION STAGE"]
+        P1["Works at scale · Thousands concurrent · All edge cases"]:::service
+        P2["Cost optimized · Defense in depth"]:::service
+        P3["99.9% reliability · Production services"]:::service
+        P4["Time: 2-6 months · Team: 3-10 people"]:::service
+    end
+
+    classDef danger fill:#EF4444,stroke:#B91C1C,color:#FFFFFF,font-size:16px
     classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
-    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
-    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
 ```
 
 **Figure 1.1:** The journey from demo to production—where most AI projects fail
@@ -196,12 +184,11 @@ Each layer serves a critical purpose:
 Production AI engineering is fundamentally about trade-offs. Here are the primary tensions:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 quadrantChart
     title The Four Trade-off Dimensions
     x-axis Velocity --> Reliability
     y-axis Cost --> Quality
-    quadrant-1 Expensive & Slow
+    quadrant-1 Expensive but Reliable
     quadrant-2 Ideal (myth)
     quadrant-3 Cheap & Fast
     quadrant-4 Robust but Basic
