@@ -11,11 +11,11 @@
 flowchart LR
     subgraph chart ["OPTIMIZATION TECHNIQUE OVERVIEW: Quality vs Cost"]
         direction TB
-        FP32["FP32\nBest quality, highest cost"]
-        FP16["FP16\nMinimal quality loss"]
-        FP8["FP8\nGood balance"]
-        INT8["INT8\nSignificant speedup"]
-        INT4["INT4\nMax compression, quality loss"]
+        FP32["FP32<br/>Best quality, highest cost"]
+        FP16["FP16<br/>Minimal quality loss"]
+        FP8["FP8<br/>Good balance"]
+        INT8["INT8<br/>Significant speedup"]
+        INT4["INT4<br/>Max compression, quality loss"]
 
         FP32 --> FP16 --> FP8 --> INT8 --> INT4
     end
@@ -64,30 +64,30 @@ TECHNIQUE COMPARISON (approximate ranges -- actual results vary by model and wor
 flowchart TB
     subgraph formats ["PRECISION FORMATS"]
         direction TB
-        fp32["FP32 — 32 bits\nSign: 1, Exponent: 8, Mantissa: 23\nRange: +/-3.4 x 10^38"]
-        fp16["FP16 — 16 bits\nSign: 1, Exponent: 5, Mantissa: 10\nRange: +/-65504"]
-        bf16["BF16 — 16 bits\nSign: 1, Exponent: 8, Mantissa: 7\nRange: Same as FP32, less precision"]
-        int8["INT8 — 8 bits\nRange: -128 to 127"]
+        fp32["FP32 — 32 bits<br/>Sign: 1, Exponent: 8, Mantissa: 23<br/>Range: +/-3.4 x 10^38"]
+        fp16["FP16 — 16 bits<br/>Sign: 1, Exponent: 5, Mantissa: 10<br/>Range: +/-65504"]
+        bf16["BF16 — 16 bits<br/>Sign: 1, Exponent: 8, Mantissa: 7<br/>Range: Same as FP32, less precision"]
+        int8["INT8 — 8 bits<br/>Range: -128 to 127"]
     end
 
     subgraph process ["QUANTIZATION PROCESS"]
         direction TB
-        orig["Original FP32 weights\n-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
-        scale["Determine scale and zero-point\nscale = (max - min) / 255 = 0.0074\nzero_point = round(-min / scale) = 135"]
-        quant["Quantized INT8 weights\n103, 255, 133, 212, 0, 152, 197, 28"]
+        orig["Original FP32 weights<br/>-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
+        scale["Determine scale and zero-point<br/>scale = (max - min) / 255 = 0.0074<br/>zero_point = round(-min / scale) = 135"]
+        quant["Quantized INT8 weights<br/>103, 255, 133, 212, 0, 152, 197, 28"]
         orig --> scale --> quant
     end
 
     subgraph ptq ["1. Post-Training Quantization — PTQ"]
         direction LR
-        ptq_desc["Quantize after training\nNo retraining needed\nFaster to implement\nMay lose more quality"]
+        ptq_desc["Quantize after training<br/>No retraining needed<br/>Faster to implement<br/>May lose more quality"]
         trained["Trained Model"] --> calibration["Calibration"] --> quantized_ptq["Quantized Model"]
     end
 
     subgraph qat ["2. Quantization-Aware Training — QAT"]
         direction LR
-        qat_desc["Simulate quantization during training\nModel learns to be robust\nBetter quality preservation\nRequires retraining"]
-        fake_quant["Training with\nFake Quantization"] --> quantized_qat["Quantized Model"]
+        qat_desc["Simulate quantization during training<br/>Model learns to be robust<br/>Better quality preservation<br/>Requires retraining"]
+        fake_quant["Training with<br/>Fake Quantization"] --> quantized_qat["Quantized Model"]
     end
 
     formats --> process
@@ -226,28 +226,28 @@ def load_gptq_model(
 flowchart TB
     subgraph concept ["KNOWLEDGE DISTILLATION — CONCEPT"]
         direction LR
-        teacher["Teacher Model — Large\nGPT-4 / Claude\n175B params\n\nComplex reasoning\nBroad knowledge\nHigh accuracy\nCost: $$$$$\nLatency: 2000ms"]
-        student["Student Model — Small\nGPT-4-mini\n8B params\n\nSimpler reasoning\nFocused knowledge\nGood accuracy\nCost: $\nLatency: 200ms"]
-        teacher -- "Transfer\nKnowledge" --> student
+        teacher["Teacher Model — Large<br/>GPT-4 / Claude<br/>175B params<br/><br/>Complex reasoning<br/>Broad knowledge<br/>High accuracy<br/>Cost: $$$$$<br/>Latency: 2000ms"]
+        student["Student Model — Small<br/>GPT-4-mini<br/>8B params<br/><br/>Simpler reasoning<br/>Focused knowledge<br/>Good accuracy<br/>Cost: $<br/>Latency: 200ms"]
+        teacher -- "Transfer<br/>Knowledge" --> student
     end
 
     subgraph process ["DISTILLATION PROCESS"]
         direction TB
         step1["Step 1: Generate training data"]
         query["Query"] --> teacherLLM["Teacher"] --> response["High-quality response"]
-        step2["Step 2: Train student on teacher outputs\nInput: Query\nTarget: Teacher response — soft labels\nLoss: KL divergence + task loss"]
-        step3["Step 3: Evaluate and iterate\nCompare student vs teacher on eval set\nAdd hard examples where student fails\nRepeat until quality target met"]
+        step2["Step 2: Train student on teacher outputs<br/>Input: Query<br/>Target: Teacher response — soft labels<br/>Loss: KL divergence + task loss"]
+        step3["Step 3: Evaluate and iterate<br/>Compare student vs teacher on eval set<br/>Add hard examples where student fails<br/>Repeat until quality target met"]
         step1 --> query
         response --> step2 --> step3
     end
 
     subgraph strategies ["DISTILLATION STRATEGIES"]
         direction TB
-        s1["Response Distill\nTrain on teacher final outputs"]
-        s2["Logit Distillation\nMatch teacher probability distributions"]
-        s3["Feature Distillation\nMatch intermediate representations"]
-        s4["Chain-of-Thought\nInclude teacher reasoning in training"]
-        s5["Selective Distill\nFocus on hard/important examples"]
+        s1["Response Distill<br/>Train on teacher final outputs"]
+        s2["Logit Distillation<br/>Match teacher probability distributions"]
+        s3["Feature Distillation<br/>Match intermediate representations"]
+        s4["Chain-of-Thought<br/>Include teacher reasoning in training"]
+        s5["Selective Distill<br/>Focus on hard/important examples"]
     end
 
     concept --> process --> strategies
@@ -449,16 +449,16 @@ flowchart TB
     subgraph withcache ["WITH PROMPT CACHING — 4000+ tokens saved, 66% reduction"]
         direction TB
         r1_wc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc_cache["Process and Cache"]
-        proc_cache --> kvcache["KV Cache\nStores computed attention states\nSystem prompt only"]
-        kvcache --> r2_wc["Req 2: Cached + User: Help\nProcess only new tokens"]
-        kvcache --> r3_wc["Req 3: Cached + User: Thanks\nProcess only new tokens"]
+        proc_cache --> kvcache["KV Cache<br/>Stores computed attention states<br/>System prompt only"]
+        kvcache --> r2_wc["Req 2: Cached + User: Help<br/>Process only new tokens"]
+        kvcache --> r3_wc["Req 3: Cached + User: Thanks<br/>Process only new tokens"]
     end
 
     subgraph strategies ["CACHING STRATEGIES"]
         direction TB
-        prefix["1. PREFIX CACHING\nSame prefix across requests\nBest for: System prompts, few-shot examples\nSavings: Significant token reduction\nImpl: Most LLM APIs support natively"]
-        semantic["2. SEMANTIC CACHING\nSimilar queries\nBest for: FAQ-style queries, repeated questions\nSavings: 100% for cache hits\nImpl: Embed query, search cache, return if similar"]
-        response_c["3. RESPONSE CACHING\nExact matches\nBest for: Deterministic queries, idempotent ops\nSavings: 100% for cache hits\nImpl: Hash request, lookup, return cached response"]
+        prefix["1. PREFIX CACHING<br/>Same prefix across requests<br/>Best for: System prompts, few-shot examples<br/>Savings: Significant token reduction<br/>Impl: Most LLM APIs support natively"]
+        semantic["2. SEMANTIC CACHING<br/>Similar queries<br/>Best for: FAQ-style queries, repeated questions<br/>Savings: 100% for cache hits<br/>Impl: Embed query, search cache, return if similar"]
+        response_c["3. RESPONSE CACHING<br/>Exact matches<br/>Best for: Deterministic queries, idempotent ops<br/>Savings: 100% for cache hits<br/>Impl: Hash request, lookup, return cached response"]
     end
 
     nocache --> withcache --> strategies
@@ -759,28 +759,28 @@ class CachedLLMService:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TB
-    subgraph static ["1. STATIC BATCHING\nWait for fixed batch size, then process\nPros: Simple, predictable\nCons: Latency for early requests"]
+    subgraph static ["1. STATIC BATCHING<br/>Wait for fixed batch size, then process<br/>Pros: Simple, predictable<br/>Cons: Latency for early requests"]
         direction LR
-        s_r1["R1"] --> s_wait["Wait for\nbatch size"]
+        s_r1["R1"] --> s_wait["Wait for<br/>batch size"]
         s_r2["R2"] --> s_wait
         s_r3["R3"] --> s_wait
         s_r4["R4"] --> s_wait
         s_wait --> s_batch["Batch Process"] --> s_resp["All responses"]
     end
 
-    subgraph dynamic ["2. DYNAMIC BATCHING\nProcess after timeout or size threshold\nPros: Better latency, adapts to traffic\nCons: More complex, variable batch sizes"]
+    subgraph dynamic ["2. DYNAMIC BATCHING<br/>Process after timeout or size threshold<br/>Pros: Better latency, adapts to traffic<br/>Cons: More complex, variable batch sizes"]
         direction LR
-        d_r1["R1"] --> d_timeout["Timeout\ntrigger"]
+        d_r1["R1"] --> d_timeout["Timeout<br/>trigger"]
         d_r2["R2"] --> d_timeout
         d_timeout --> d_batch1["Batch R1,R2"] --> d_resp1["Responses"]
-        d_r3["R3"] --> d_size["Size\nthreshold"]
+        d_r3["R3"] --> d_size["Size<br/>threshold"]
         d_r4["R4"] --> d_size
         d_r5["R5"] --> d_size
         d_r6["R6"] --> d_size
         d_size --> d_batch2["Batch R3-R6"] --> d_resp2["Responses"]
     end
 
-    subgraph continuous ["3. CONTINUOUS BATCHING — vLLM / TensorRT-LLM\nDynamically add/remove requests as they complete\nPros: Max GPU utilization, best throughput\nCons: Requires specialized serving engine"]
+    subgraph continuous ["3. CONTINUOUS BATCHING — vLLM / TensorRT-LLM<br/>Dynamically add/remove requests as they complete<br/>Pros: Max GPU utilization, best throughput<br/>Cons: Requires specialized serving engine"]
         direction TB
         c_state1["GPU: R1, R2, R3, __, __"]
         c_event1["R2 completes, R4 joins"]

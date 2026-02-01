@@ -19,17 +19,17 @@
 flowchart TB
     subgraph comparison ["TRADITIONAL vs AI OBSERVABILITY"]
         direction LR
-        traditional["Traditional Observability\n--- What ops teams track ---\nRequest latency\nError rates\nThroughput\nCPU/Memory usage\nDatabase queries"]
-        ai_obs["AI Observability\n--- What AI teams need ---\nAll traditional metrics PLUS:\nToken usage and costs\nModel response quality\nRetrieval relevance\nEmbedding drift\nPrompt variations\nHallucination detection\nSafety violations\nA/B test metrics"]
+        traditional["Traditional Observability<br/>--- What ops teams track ---<br/>Request latency<br/>Error rates<br/>Throughput<br/>CPU/Memory usage<br/>Database queries"]
+        ai_obs["AI Observability<br/>--- What AI teams need ---<br/>All traditional metrics PLUS:<br/>Token usage and costs<br/>Model response quality<br/>Retrieval relevance<br/>Embedding drift<br/>Prompt variations<br/>Hallucination detection<br/>Safety violations<br/>A/B test metrics"]
         traditional -- "extends" --> ai_obs
     end
 
     subgraph pyramid ["THE AI OBSERVABILITY PYRAMID"]
         direction TB
-        quality["QUALITY METRICS\nLLM-as-judge scores\nUser feedback, accuracy"]
-        traces["AI TRACES\nLLM calls, RAG steps\nTool invocations"]
-        business["BUSINESS METRICS\nTokens, costs\nLatency, throughput"]
-        infra["INFRASTRUCTURE\nLogs, metrics\nTraditional APM"]
+        quality["QUALITY METRICS<br/>LLM-as-judge scores<br/>User feedback, accuracy"]
+        traces["AI TRACES<br/>LLM calls, RAG steps<br/>Tool invocations"]
+        business["BUSINESS METRICS<br/>Tokens, costs<br/>Latency, throughput"]
+        infra["INFRASTRUCTURE<br/>Logs, metrics<br/>Traditional APM"]
 
         quality --> traces --> business --> infra
     end
@@ -868,19 +868,19 @@ class QualityMonitor:
 flowchart TB
     subgraph classification ["INCIDENT CLASSIFICATION"]
         direction TB
-        sev1["SEV1 - Critical\nComplete service outage\nData breach or security incident\nOver 50% of requests failing\nResponse: Immediate, all-hands"]
-        sev2["SEV2 - High\nSignificant quality degradation over 20% drop\nMajor feature broken\nCost spike over 200% normal\nResponse: Within 1 hour, primary team"]
-        sev3["SEV3 - Medium\nMinor quality issues\nElevated latency\nPartial feature degradation\nResponse: Within 4 hours, business hours"]
-        sev4["SEV4 - Low\nCosmetic issues\nNon-critical bugs\nResponse: Next business day"]
+        sev1["SEV1 - Critical<br/>Complete service outage<br/>Data breach or security incident<br/>Over 50% of requests failing<br/>Response: Immediate, all-hands"]
+        sev2["SEV2 - High<br/>Significant quality degradation over 20% drop<br/>Major feature broken<br/>Cost spike over 200% normal<br/>Response: Within 1 hour, primary team"]
+        sev3["SEV3 - Medium<br/>Minor quality issues<br/>Elevated latency<br/>Partial feature degradation<br/>Response: Within 4 hours, business hours"]
+        sev4["SEV4 - Low<br/>Cosmetic issues<br/>Non-critical bugs<br/>Response: Next business day"]
     end
 
-    trigger["TRIGGER: Quality score drops\nover 15% for over 10 minutes"]
+    trigger["TRIGGER: Quality score drops<br/>over 15% for over 10 minutes"]
 
-    step1["Step 1: ASSESS — 0-5 min\nCheck quality dashboard for affected dimensions\nIdentify if degradation is global or segment-specific\nReview recent deployments, last 24h\nCheck external dependencies like OpenAI status"]
-    step2["Step 2: MITIGATE — 5-15 min\nIf recent deployment: Rollback\nIf external dependency: Switch to fallback model\nEnable degraded mode, cached responses\nIf rate limiting: Scale up workers\nEnable request shedding for non-critical traffic"]
-    step3["Step 3: COMMUNICATE — 15-30 min\nUpdate status page\nNotify affected customers if user-facing\nPost in #incidents Slack channel\nPage additional responders if needed"]
-    step4["Step 4: RESOLVE — 30+ min\nIdentify root cause\nImplement fix with proper testing\nDeploy fix through normal pipeline\nVerify quality scores recovered\nUpdate status page: resolved"]
-    step5["Step 5: POST-MORTEM — 24-48h\nSchedule blameless post-mortem\nDocument timeline and actions\nIdentify what worked and what did not\nDefine action items to prevent recurrence\nAdd regression test cases\nUpdate runbooks if needed"]
+    step1["Step 1: ASSESS — 0-5 min<br/>Check quality dashboard for affected dimensions<br/>Identify if degradation is global or segment-specific<br/>Review recent deployments, last 24h<br/>Check external dependencies like OpenAI status"]
+    step2["Step 2: MITIGATE — 5-15 min<br/>If recent deployment: Rollback<br/>If external dependency: Switch to fallback model<br/>Enable degraded mode, cached responses<br/>If rate limiting: Scale up workers<br/>Enable request shedding for non-critical traffic"]
+    step3["Step 3: COMMUNICATE — 15-30 min<br/>Update status page<br/>Notify affected customers if user-facing<br/>Post in #incidents Slack channel<br/>Page additional responders if needed"]
+    step4["Step 4: RESOLVE — 30+ min<br/>Identify root cause<br/>Implement fix with proper testing<br/>Deploy fix through normal pipeline<br/>Verify quality scores recovered<br/>Update status page: resolved"]
+    step5["Step 5: POST-MORTEM — 24-48h<br/>Schedule blameless post-mortem<br/>Document timeline and actions<br/>Identify what worked and what did not<br/>Define action items to prevent recurrence<br/>Add regression test cases<br/>Update runbooks if needed"]
 
     classification --> trigger
     trigger --> step1 --> step2 --> step3 --> step4 --> step5

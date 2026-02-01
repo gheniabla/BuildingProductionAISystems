@@ -202,19 +202,19 @@ volumes:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    Ingress["Ingress Controller\n(NGINX / Traefik / ALB)"]:::gateway
+    Ingress["Ingress Controller<br/>(NGINX / Traefik / ALB)"]:::gateway
 
     Ingress --> Svc
 
     subgraph NS ["NAMESPACE: ai-prod"]
-        Svc["SERVICE: api\n(ClusterIP / LoadBalancer)"]:::service
+        Svc["SERVICE: api<br/>(ClusterIP / LoadBalancer)"]:::service
 
         Svc --> Pod1 & Pod2 & Pod3
 
         subgraph Deploy ["DEPLOYMENT: ai-api"]
-            Pod1["Pod 1\nAPI Container"]:::client
-            Pod2["Pod 2\nAPI Container"]:::client
-            Pod3["Pod 3\nAPI Container"]:::client
+            Pod1["Pod 1<br/>API Container"]:::client
+            Pod2["Pod 2<br/>API Container"]:::client
+            Pod3["Pod 3<br/>API Container"]:::client
         end
 
         subgraph Workers ["DEPLOYMENT: celery-worker"]
@@ -223,12 +223,12 @@ flowchart TD
         end
 
         subgraph GPU ["STATEFULSET: vllm-gpu"]
-            VLLM["vLLM Pod - GPU Node\nNVIDIA A100 80GB\nModel: Llama-2-70b\nPVC: model-storage 500GB"]:::external
+            VLLM["vLLM Pod - GPU Node<br/>NVIDIA A100 80GB<br/>Model: Llama-2-70b<br/>PVC: model-storage 500GB"]:::external
         end
 
-        CM["ConfigMap\napp-config, prompts"]:::data
-        Secret["Secret\napi-keys, db-creds"]:::data
-        HPA["HPA\nmin: 2, max: 10\ntarget: 70% CPU"]:::observability
+        CM["ConfigMap<br/>app-config, prompts"]:::data
+        Secret["Secret<br/>api-keys, db-creds"]:::data
+        HPA["HPA<br/>min: 2, max: 10<br/>target: 70% CPU"]:::observability
     end
 
     HPA -. scales .-> Deploy
@@ -459,21 +459,21 @@ spec:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    GW["API Gateway\n(Router)"]:::gateway
+    GW["API Gateway<br/>(Router)"]:::gateway
 
-    GW --> Fast["Fast/Cheap\nRequests"]:::service
-    GW --> Quality["Quality\nRequests"]:::service
-    GW --> Fallback["Fallback\nPool"]:::service
+    GW --> Fast["Fast/Cheap<br/>Requests"]:::service
+    GW --> Quality["Quality<br/>Requests"]:::service
+    GW --> Fallback["Fallback<br/>Pool"]:::service
 
-    Fast --> VLLM["Self-hosted vLLM\n(Llama-70b)"]:::data
-    Quality --> GPT4["OpenAI\nGPT-4"]:::external
-    Fallback --> Claude["Anthropic\nClaude"]:::external
+    Fast --> VLLM["Self-hosted vLLM<br/>(Llama-70b)"]:::data
+    Quality --> GPT4["OpenAI<br/>GPT-4"]:::external
+    Fallback --> Claude["Anthropic<br/>Claude"]:::external
 
     subgraph Rules ["ROUTING RULES"]
-        R1["Enterprise + Complex\n--> GPT-4"]:::client
-        R2["Tokens < 2000 + Low Latency\n--> Self-hosted vLLM"]:::client
-        R3["OpenAI Rate Limit Hit\n--> Anthropic fallback"]:::client
-        R4["Default\n--> GPT-4-mini cost-optimized"]:::client
+        R1["Enterprise + Complex<br/>--> GPT-4"]:::client
+        R2["Tokens < 2000 + Low Latency<br/>--> Self-hosted vLLM"]:::client
+        R3["OpenAI Rate Limit Hit<br/>--> Anthropic fallback"]:::client
+        R4["Default<br/>--> GPT-4-mini cost-optimized"]:::client
     end
 
     GW -. "evaluates" .-> Rules
@@ -641,28 +641,28 @@ class ModelRouter:
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
     subgraph API ["API Layer"]
-        EP["OpenAI-compatible endpoints\n/v1/completions\n/v1/chat/completions"]:::gateway
+        EP["OpenAI-compatible endpoints<br/>/v1/completions<br/>/v1/chat/completions"]:::gateway
     end
 
     API --> SCHED
 
     subgraph SCHED ["Scheduler & Batching"]
-        CB["Continuous Batching\nNew requests start as soon as old ones finish\n\nTraditional: slots idle until batch completes\nContinuous: slots reused immediately"]:::service
+        CB["Continuous Batching<br/>New requests start as soon as old ones finish<br/><br/>Traditional: slots idle until batch completes<br/>Continuous: slots reused immediately"]:::service
     end
 
     SCHED --> PAGED
 
     subgraph PAGED ["PagedAttention Memory Manager"]
-        KV["KV Cache Management\n\nTraditional: pre-allocated, wasted space\nPagedAttention: dynamic page allocation/freeing\nMemory pages shared across requests"]:::observability
+        KV["KV Cache Management<br/><br/>Traditional: pre-allocated, wasted space<br/>PagedAttention: dynamic page allocation/freeing<br/>Memory pages shared across requests"]:::observability
     end
 
     PAGED --> GPUS
 
     subgraph GPUS ["GPU Execution"]
-        G0["GPU 0\nTensor Parallel"]:::external
-        G1["GPU 1\nTensor Parallel"]:::external
-        G2["GPU 2\nTensor Parallel"]:::external
-        G3["GPU 3\nTensor Parallel"]:::external
+        G0["GPU 0<br/>Tensor Parallel"]:::external
+        G1["GPU 1<br/>Tensor Parallel"]:::external
+        G2["GPU 2<br/>Tensor Parallel"]:::external
+        G3["GPU 3<br/>Tensor Parallel"]:::external
     end
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
@@ -748,7 +748,7 @@ flowchart TD
         T1["Traffic"]:::client
         T1 -- "99%" --> S1["Stable"]:::service
         T1 -- "1%" --> C1["Canary"]:::external
-        Cr1["error_rate < 0.1%\nlatency_p99 < 2x stable"]:::observability
+        Cr1["error_rate < 0.1%<br/>latency_p99 < 2x stable"]:::observability
     end
 
     P1 -- "Pass" --> P2
@@ -774,14 +774,14 @@ flowchart TD
     subgraph P4 ["PHASE 4: Full Rollout"]
         T4["Traffic"]:::client
         T4 -- "100%" --> N4["New Version"]:::data
-        Note4["Keep old version 24h\nfor quick rollback"]:::observability
+        Note4["Keep old version 24h<br/>for quick rollback"]:::observability
     end
 
     P1 -- "Fail" --> RB["AUTOMATIC ROLLBACK"]:::gateway
     P2 -- "Fail" --> RB
     P3 -- "Fail" --> RB
 
-    RB --- Triggers["Error rate > 1%\np99 latency > 3x baseline\nCost per request > 2x baseline\nQuality score drops > 10%\nManual trigger from on-call"]:::gateway
+    RB --- Triggers["Error rate > 1%<br/>p99 latency > 3x baseline<br/>Cost per request > 2x baseline<br/>Quality score drops > 10%<br/>Manual trigger from on-call"]:::gateway
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF

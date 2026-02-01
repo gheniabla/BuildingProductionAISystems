@@ -21,7 +21,7 @@ flowchart LR
         D5["Security ignored"]
         D6["'It usually works'"]
         D7["Notebook cells"]
-        D8["Time: 2 hours\nTeam: 1 person"]
+        D8["Time: 2 hours<br/>Team: 1 person"]
     end
 
     subgraph PROD["PRODUCTION STAGE"]
@@ -32,11 +32,11 @@ flowchart LR
         P5["Defense in depth"]
         P6["99.9% reliability"]
         P7["Production services"]
-        P8["Time: 2-6 months\nTeam: 3-10 people"]
+        P8["Time: 2-6 months<br/>Team: 3-10 people"]
     end
 
     DEMO -->|"Most projects die here"| VALLEY
-    VALLEY["The Valley of\nProduction Death"]:::danger
+    VALLEY["The Valley of<br/>Production Death"]:::danger
     VALLEY --> PROD
 
     classDef danger fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
@@ -350,8 +350,8 @@ flowchart TD
     UserTask["User Task"]:::client --> AgentCore
 
     subgraph AgentCore["AGENT CORE"]
-        Planning["Planning Module\n(Task Decomposition)"]:::service
-        Reasoning["Reasoning Loop\n(Think / Act / Observe)"]:::service
+        Planning["Planning Module<br/>(Task Decomposition)"]:::service
+        Reasoning["Reasoning Loop<br/>(Think / Act / Observe)"]:::service
         Planning --> Reasoning
     end
 
@@ -386,8 +386,8 @@ Before building production systems, let's ensure a solid understanding of what w
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
     Input["Input: 'The cat sat on the'"]:::client
-    Input --> Tokenize["TOKENIZATION\nTokens → IDs: 1234, 5678, 9012, 345, 1234"]:::service
-    Tokenize --> Embed["TOKEN EMBEDDING + POSITIONAL\nEach token → 4096-dim vector\nPosition info encoded"]:::service
+    Input --> Tokenize["TOKENIZATION<br/>Tokens → IDs: 1234, 5678, 9012, 345, 1234"]:::service
+    Tokenize --> Embed["TOKEN EMBEDDING + POSITIONAL<br/>Each token → 4096-dim vector<br/>Position info encoded"]:::service
     Embed --> TransBlock
 
     subgraph TransBlock["TRANSFORMER BLOCK x N (Repeated 32-128 times)"]
@@ -396,8 +396,8 @@ flowchart TD
         Attention --> FFN
     end
 
-    FFN -->|"Loop back\nfor N layers"| Attention
-    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX\nProject to vocabulary size\nNext token: 'mat' (p=0.34)"]:::external
+    FFN -->|"Loop back<br/>for N layers"| Attention
+    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX<br/>Project to vocabulary size<br/>Next token: 'mat' (p=0.34)"]:::external
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
@@ -489,11 +489,11 @@ print(f"Estimated cost: ${cost:.4f}")  # ~$0.0163
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    Q1{"Do you process\n>1M requests/day?"}:::service
+    Q1{"Do you process<br/>>1M requests/day?"}:::service
     Q1 -->|YES| SH1["Consider self-hosted"]:::external
-    Q1 -->|NO| Q2{"Do you have strict\ndata residency needs?"}:::service
-    Q2 -->|YES| SH2["Self-hosted\nor Azure OpenAI"]:::external
-    Q2 -->|NO| API["Use API\n(OpenAI / Anthropic)"]:::data
+    Q1 -->|NO| Q2{"Do you have strict<br/>data residency needs?"}:::service
+    Q2 -->|YES| SH2["Self-hosted<br/>or Azure OpenAI"]:::external
+    Q2 -->|NO| API["Use API<br/>(OpenAI / Anthropic)"]:::data
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
