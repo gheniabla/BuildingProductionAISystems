@@ -223,49 +223,44 @@ def load_gptq_model(
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
-flowchart TB
+flowchart TD
     subgraph concept ["KNOWLEDGE DISTILLATION — CONCEPT"]
         direction LR
-        teacher["Teacher Model — Large<br/>GPT-4 / Claude<br/>175B params<br/><br/>Complex reasoning<br/>Broad knowledge<br/>High accuracy<br/>Cost: $$$$$<br/>Latency: 2000ms"]
-        student["Student Model — Small<br/>GPT-4-mini<br/>8B params<br/><br/>Simpler reasoning<br/>Focused knowledge<br/>Good accuracy<br/>Cost: $<br/>Latency: 200ms"]
-        teacher -- "Transfer<br/>Knowledge" --> student
+        teacher["Teacher Model<br/>GPT-4 / Claude · 175B params<br/>High accuracy · Cost: $$$$$ · 2000ms"]
+        student["Student Model<br/>GPT-4-mini · 8B params<br/>Good accuracy · Cost: $ · 200ms"]
+        teacher -- "Transfer Knowledge" --> student
     end
+
+    concept --> step1
 
     subgraph process ["DISTILLATION PROCESS"]
-        direction TB
-        step1["Step 1: Generate training data"]
-        query["Query"] --> teacherLLM["Teacher"] --> response["High-quality response"]
-        step2["Step 2: Train student on teacher outputs<br/>Input: Query<br/>Target: Teacher response — soft labels<br/>Loss: KL divergence + task loss"]
-        step3["Step 3: Evaluate and iterate<br/>Compare student vs teacher on eval set<br/>Add hard examples where student fails<br/>Repeat until quality target met"]
-        step1 --> query
-        response --> step2 --> step3
+        step1["Step 1: Generate training data"]:::service
+        step1 --> query["Query"]:::client
+        query --> teacherLLM["Teacher"]:::gateway
+        teacherLLM --> response["High-quality response"]:::data
+        response --> step2["Step 2: Train student on teacher outputs<br/>Target: teacher response · Loss: KL divergence + task loss"]:::service
+        step2 --> step3["Step 3: Evaluate and iterate<br/>Compare student vs teacher · Add hard examples · Repeat"]:::service
     end
+
+    process --> strategies
 
     subgraph strategies ["DISTILLATION STRATEGIES"]
-        direction TB
-        s1["Response Distill<br/>Train on teacher final outputs"]
-        s2["Logit Distillation<br/>Match teacher probability distributions"]
-        s3["Feature Distillation<br/>Match intermediate representations"]
-        s4["Chain-of-Thought<br/>Include teacher reasoning in training"]
-        s5["Selective Distill<br/>Focus on hard/important examples"]
+        direction LR
+        s1["Response<br/>Distillation"]:::external
+        s2["Logit<br/>Distillation"]:::external
+        s3["Feature<br/>Distillation"]:::external
+        s4["Chain-of-Thought<br/>Distillation"]:::external
+        s5["Selective<br/>Distillation"]:::external
     end
-
-    concept --> process --> strategies
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
     classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
     classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
-    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
     class teacher gateway
     class student data
-    class query client
-    class teacherLLM service
-    class response data
-    class step1,step2,step3 service
-    class s1,s2,s3,s4,s5 external
 ```
 
 **Figure 12.3:** Knowledge distillation overview
