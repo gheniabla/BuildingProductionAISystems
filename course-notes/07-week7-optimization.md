@@ -73,21 +73,23 @@ flowchart TB
     subgraph process ["QUANTIZATION PROCESS"]
         direction TB
         orig["Original FP32 weights<br/>-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
-        scale["Determine scale and zero-point<br/>scale = (max - min) / 255 = 0.0074<br/>zero_point = round(-min / scale) = 135"]
+        scale["Determine scale and zero-point<br/>scale = #40;max - min#41; / 255 = 0.0074<br/>zero_point = round#40;-min / scale#41; = 135"]
         quant["Quantized INT8 weights<br/>103, 255, 133, 212, 0, 152, 197, 28"]
         orig --> scale --> quant
     end
 
     subgraph ptq ["1. Post-Training Quantization — PTQ"]
         direction LR
-        ptq_desc["Quantize after training<br/>No retraining needed<br/>Faster to implement<br/>May lose more quality"]
         trained["Trained Model"] --> calibration["Calibration"] --> quantized_ptq["Quantized Model"]
+        ptq_desc["No retraining needed · Faster to implement · May lose more quality"]
+        calibration -.-> ptq_desc
     end
 
     subgraph qat ["2. Quantization-Aware Training — QAT"]
         direction LR
-        qat_desc["Simulate quantization during training<br/>Model learns to be robust<br/>Better quality preservation<br/>Requires retraining"]
         fake_quant["Training with<br/>Fake Quantization"] --> quantized_qat["Quantized Model"]
+        qat_desc["Model learns to be robust · Better quality · Requires retraining"]
+        fake_quant -.-> qat_desc
     end
 
     formats --> process

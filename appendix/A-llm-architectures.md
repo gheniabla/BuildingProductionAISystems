@@ -716,10 +716,10 @@ In each MoE layer, the standard FFN is replaced by N expert FFNs and a **router*
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
     A["Input x"] --> B["Router: W_gate * x → logits for N experts"]
-    B --> C["Select top-K experts (typically K=2)"]
-    C --> D["Expert 1: FFN_1(x) * gate_1"]
-    C --> E["Expert 4: FFN_4(x) * gate_4"]
-    D --> F["Output = gate_1 * FFN_1(x) + gate_4 * FFN_4(x)"]
+    B --> C["Select top-K experts #40;typically K=2#41;"]
+    C --> D["Expert 1: FFN_1#40;x#41; * gate_1"]
+    C --> E["Expert 4: FFN_4#40;x#41; * gate_4"]
+    D --> F["Output = gate_1 * FFN_1#40;x#41; + gate_4 * FFN_4#40;x#41;"]
     E --> F
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
@@ -833,14 +833,14 @@ The denoising network is typically a **U-Net** — encoder-decoder with skip con
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    IN["Input (x_t + t_emb)"] --> D1["DownBlock 1"]
+    IN["Input #40;x_t + t_emb#41;"] --> D1["DownBlock 1"]
     D1 --> D2["DownBlock 2"]
     D2 --> D3["DownBlock 3"]
     D3 --> M["MiddleBlock + Attention"]
     M --> U3["UpBlock 3"]
     U3 --> U2["UpBlock 2"]
     U2 --> U1["UpBlock 1"]
-    U1 --> OUT["Output (predicted noise)"]
+    U1 --> OUT["Output #40;predicted noise#41;"]
 
     D1 -- "skip 1" --> U1
     D2 -- "skip 2" --> U2
@@ -869,8 +869,8 @@ Operating in pixel space is prohibitively expensive. **Latent Diffusion Models**
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart LR
-    A["Image (512x512x3)"] --> B["VAE Encoder"]
-    B --> C["Latent (64x64x4)"]
+    A["Image #40;512x512x3#41;"] --> B["VAE Encoder"]
+    B --> C["Latent #40;64x64x4#41;"]
     C --> D["Diffusion"]
     D --> E["VAE Decoder"]
     E --> F["Image"]

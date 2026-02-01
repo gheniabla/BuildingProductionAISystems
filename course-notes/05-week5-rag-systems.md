@@ -34,13 +34,13 @@ flowchart TD
     QRew --> RL
 
     subgraph RL ["RETRIEVAL LAYER"]
-        VS["Vector Search<br/>(Semantic)"]:::data --> KS["Keyword Search<br/>(BM25/Sparse)"]:::data --> HF["Hybrid Fusion<br/>(RRF/Linear)"]:::data
+        VS["Vector Search<br/>#40;Semantic#41;"]:::data --> KS["Keyword Search<br/>#40;BM25/Sparse#41;"]:::data --> HF["Hybrid Fusion<br/>#40;RRF/Linear#41;"]:::data
     end
 
     RL --> RK
 
     subgraph RK ["RANKING LAYER"]
-        RR["Reranker Model<br/>(Cross-Encoder)"]:::service --> CF["Contextual Filtering<br/>(Metadata, Access)"]:::service
+        RR["Reranker Model<br/>#40;Cross-Encoder#41;"]:::service --> CF["Contextual Filtering<br/>#40;Metadata, Access#41;"]:::service
     end
 
     RK --> CA
@@ -102,10 +102,10 @@ flowchart TD
     A{"Need >10M vectors?"}:::gateway
 
     A -- NO --> B{"Already using<br/>PostgreSQL?"}:::gateway
-    B -- YES --> C["pgvector<br/>(simple addition)"]:::data
+    B -- YES --> C["pgvector<br/>#40;simple addition#41;"]:::data
     B -- NO --> D{"Want managed<br/>service?"}:::gateway
     D -- YES --> E["Pinecone"]:::external
-    D -- NO --> F["Qdrant<br/>(best overall)"]:::service
+    D -- NO --> F["Qdrant<br/>#40;best overall#41;"]:::service
 
     A -- YES --> G{"Need graph<br/>capabilities?"}:::gateway
     G -- YES --> H["Weaviate"]:::service
@@ -130,26 +130,23 @@ flowchart TD
     title --> IVF
     title --> FLAT
 
-    subgraph HNSW ["1. HNSW (Hierarchical Navigable Small World)"]
-        H_L3["Layer 3<br/>(Sparse connections)"]:::service --> H_L2["Layer 2<br/>(Medium connections)"]:::service --> H_L1["Layer 1<br/>(Dense connections)"]:::service
-        H_Perf["Build: O(n log n)<br/>Query: O(log n)<br/>Memory: High"]:::external
-        H_Trade["+ Very fast queries<br/>+ High recall >95%<br/>- High memory usage<br/>- Slow index build"]:::data
-        H_Best["Best for: Most production use cases"]:::client
+    subgraph HNSW ["1. HNSW #40;Hierarchical Navigable Small World#41;"]
+        H_L3["Layer 3 #40;Sparse#41;"]:::service --> H_L2["Layer 2 #40;Medium#41;"]:::service --> H_L1["Layer 1 #40;Dense#41;"]:::service
+        H_L1 --> H_Perf["O#40;n log n#41; build · O#40;log n#41; query · High memory"]:::external
+        H_Perf --> H_Best["Best for: Most production use cases"]:::client
     end
 
-    subgraph IVF ["2. IVFFlat (Inverted File Flat)"]
+    subgraph IVF ["2. IVFFlat #40;Inverted File Flat#41;"]
         I_C1["Cell 1"]:::service --> I_V1["Vectors"]:::data
         I_C2["Cell 2"]:::service --> I_V2["Vectors"]:::data
         I_Ck["Cell k"]:::service --> I_Vk["Vectors"]:::data
-        I_Perf["Build: O(n)<br/>Query: O(n/k)<br/>Memory: Medium"]:::external
-        I_Trade["+ Lower memory<br/>+ Fast build<br/>- Need to tune nprobe<br/>- Lower recall at speed"]:::data
-        I_Best["Best for: Memory-constrained,<br/>frequently rebuilt"]:::client
+        I_V1 --> I_Perf["O#40;n#41; build · O#40;n/k#41; query · Medium memory"]:::external
+        I_Perf --> I_Best["Best for: Memory-constrained, frequently rebuilt"]:::client
     end
 
-    subgraph FLAT ["3. Flat (Brute Force)"]
-        F_Perf["Query: O(n)<br/>Memory: Low"]:::external
-        F_Trade["+ Perfect recall<br/>+ Simple<br/>- Slow at scale"]:::data
-        F_Best["Best for: <10K vectors or<br/>accuracy-critical"]:::client
+    subgraph FLAT ["3. Flat #40;Brute Force#41;"]
+        F_Perf["O#40;n#41; query · Low memory"]:::external
+        F_Perf --> F_Best["Best for: less than 10K vectors or accuracy-critical"]:::client
     end
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF

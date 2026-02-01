@@ -115,7 +115,7 @@ flowchart TD
     subgraph LLMAPIs["LLM APIs"]
         OpenAI["OpenAI"]:::external
         Anthropic["Anthropic"]:::external
-        SelfHost["Self-host (vLLM)"]:::external
+        SelfHost["Self-host #40;vLLM#41;"]:::external
     end
 
     subgraph VectorDB["VECTOR DB"]
@@ -134,10 +134,10 @@ flowchart TD
     DataStores --> Obs
 
     subgraph Obs["OBSERVABILITY LAYER"]
-        Traces["Traces (LangSmith)"]:::observability
-        Metrics["Metrics (Prometheus)"]:::observability
-        Logs["Logs (Structured)"]:::observability
-        Alerts["Alerts (PagerDuty)"]:::observability
+        Traces["Traces #40;LangSmith#41;"]:::observability
+        Metrics["Metrics #40;Prometheus#41;"]:::observability
+        Logs["Logs #40;Structured#41;"]:::observability
+        Alerts["Alerts #40;PagerDuty#41;"]:::observability
     end
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
@@ -311,7 +311,7 @@ flowchart TD
     Query --> Rewrite["Rewrite Query"]:::service
     Embed --> VSearch["Vector DB Search"]:::data
     Rewrite --> VSearch
-    VSearch --> Rerank["Reranker (Optional)"]:::service
+    VSearch --> Rerank["Reranker #40;Optional#41;"]:::service
     Rerank --> Context["Context Assembly"]:::service
     Context --> LLM["LLM Generation"]:::external
     LLM --> Response["Response"]:::client
@@ -337,8 +337,8 @@ flowchart TD
     UserTask["User Task"]:::client --> AgentCore
 
     subgraph AgentCore["AGENT CORE"]
-        Planning["Planning Module<br/>(Task Decomposition)"]:::service
-        Reasoning["Reasoning Loop<br/>(Think / Act / Observe)"]:::service
+        Planning["Planning Module<br/>#40;Task Decomposition#41;"]:::service
+        Reasoning["Reasoning Loop<br/>#40;Think / Act / Observe#41;"]:::service
         Planning --> Reasoning
     end
 
@@ -377,14 +377,14 @@ flowchart TD
     Tokenize --> Embed["TOKEN EMBEDDING + POSITIONAL<br/>Each token → 4096-dim vector<br/>Position info encoded"]:::service
     Embed --> TransBlock
 
-    subgraph TransBlock["TRANSFORMER BLOCK x N (Repeated 32-128 times)"]
+    subgraph TransBlock["TRANSFORMER BLOCK x N #40;Repeated 32-128 times#41;"]
         Attention["Self-Attention"]:::service
         FFN["Feed-Forward Network"]:::service
         Attention --> FFN
     end
 
     FFN -->|"Loop back<br/>for N layers"| Attention
-    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX<br/>Project to vocabulary size<br/>Next token: 'mat' (p=0.34)"]:::external
+    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX<br/>Project to vocabulary size<br/>Next token: 'mat' #40;p=0.34#41;"]:::external
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
@@ -480,7 +480,7 @@ flowchart TD
     Q1 -->|YES| SH1["Consider self-hosted"]:::external
     Q1 -->|NO| Q2{"Do you have strict<br/>data residency needs?"}:::service
     Q2 -->|YES| SH2["Self-hosted<br/>or Azure OpenAI"]:::external
-    Q2 -->|NO| API["Use API<br/>(OpenAI / Anthropic)"]:::data
+    Q2 -->|NO| API["Use API<br/>#40;OpenAI / Anthropic#41;"]:::data
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF

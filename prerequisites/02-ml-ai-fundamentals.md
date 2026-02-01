@@ -172,12 +172,12 @@ Older models (RNNs) processed text one word at a time, left to right, like readi
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart LR
-    subgraph RNN["RNN (sequential -- slow)"]
+    subgraph RNN["RNN #40;sequential -- slow#41;"]
         direction LR
         r1["The<br/>step 1"] -->|process| r2["cat<br/>step 2"] -->|process| r3["sat<br/>step 3"] -->|process| r4["on<br/>step 4"] -->|process| r5["the<br/>step 5"] -->|process| r6["mat<br/>step 6"]
     end
 
-    subgraph Transformer["Transformer (parallel -- fast)"]
+    subgraph Transformer["Transformer #40;parallel -- fast#41;"]
         direction LR
         t1["The"] --> P["Process all<br/>at once<br/>step 1"]
         t2["cat"] --> P
@@ -349,9 +349,9 @@ The context window is the total number of tokens the model can consider at once 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart LR
-    subgraph CW["Context Window (e.g. 128K tokens)"]
+    subgraph CW["Context Window #40;e.g. 128K tokens#41;"]
         direction LR
-        subgraph Input["Your input (prompt)"]
+        subgraph Input["Your input #40;prompt#41;"]
             direction LR
             SP["System<br/>prompt"] --> CH["Conversation<br/>history"] --> NQ["New<br/>query"]
         end

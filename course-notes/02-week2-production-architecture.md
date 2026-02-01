@@ -840,11 +840,11 @@ Long-running AI tasks should be processed asynchronously:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TB
-    API["FastAPI<br/>(API)"]
-    Broker["Redis<br/>(Broker)"]
+    API["FastAPI<br/>#40;API#41;"]
+    Broker["Redis<br/>#40;Broker#41;"]
     Workers["Celery<br/>Workers"]
-    TaskQ["Task Queue<br/>(Priority)"]
-    ResultB["Result Backend<br/>(Redis/DB)"]
+    TaskQ["Task Queue<br/>#40;Priority#41;"]
+    ResultB["Result Backend<br/>#40;Redis/DB#41;"]
 
     API -- "enqueue" --> Broker
     Broker -- "dequeue" --> Workers

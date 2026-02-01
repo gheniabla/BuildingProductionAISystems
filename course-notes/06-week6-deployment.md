@@ -202,12 +202,12 @@ volumes:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    Ingress["Ingress Controller<br/>(NGINX / Traefik / ALB)"]:::gateway
+    Ingress["Ingress Controller<br/>#40;NGINX / Traefik / ALB#41;"]:::gateway
 
     Ingress --> Svc
 
     subgraph NS ["NAMESPACE: ai-prod"]
-        Svc["SERVICE: api<br/>(ClusterIP / LoadBalancer)"]:::service
+        Svc["SERVICE: api<br/>#40;ClusterIP / LoadBalancer#41;"]:::service
 
         Svc --> Pod1 & Pod2 & Pod3
 
@@ -459,13 +459,13 @@ spec:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    GW["API Gateway<br/>(Router)"]:::gateway
+    GW["API Gateway<br/>#40;Router#41;"]:::gateway
 
     GW --> Fast["Fast/Cheap<br/>Requests"]:::service
     GW --> Quality["Quality<br/>Requests"]:::service
     GW --> Fallback["Fallback<br/>Pool"]:::service
 
-    Fast --> VLLM["Self-hosted vLLM<br/>(Llama-70b)"]:::data
+    Fast --> VLLM["Self-hosted vLLM<br/>#40;Llama-70b#41;"]:::data
     Quality --> GPT4["OpenAI<br/>GPT-4"]:::external
     Fallback --> Claude["Anthropic<br/>Claude"]:::external
 

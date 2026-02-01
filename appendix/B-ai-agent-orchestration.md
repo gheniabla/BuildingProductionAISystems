@@ -162,15 +162,15 @@ MCP follows a client-server architecture:
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart TD
-    subgraph Host["Host Application (Claude Desktop, IDE, Custom App)"]
+    subgraph Host["Host Application #40;Claude Desktop, IDE, Custom App#41;"]
         C1["MCP Client"]
         C2["MCP Client"]
         C3["MCP Client"]
     end
 
-    C1 --> S1["MCP Server (GitHub)"]
-    C2 --> S2["MCP Server (Database)"]
-    C3 --> S3["MCP Server (Slack)"]
+    C1 --> S1["MCP Server #40;GitHub#41;"]
+    C2 --> S2["MCP Server #40;Database#41;"]
+    C3 --> S3["MCP Server #40;Slack#41;"]
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
@@ -559,8 +559,8 @@ The key insight: reasoning without acting produces plans that may be wrong; acti
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
 flowchart LR
-    T["Thought (Reason)"] --> A["Action (Tool Use)"]
-    A --> O["Observation (Tool Result)"]
+    T["Thought #40;Reason#41;"] --> A["Action #40;Tool Use#41;"]
+    A --> O["Observation #40;Tool Result#41;"]
     O --> D{"Action = finish?"}
     D -- "No" --> T
     D -- "Yes" --> F["Return answer"]
@@ -715,20 +715,21 @@ A production LLM request may assemble context from many sources:
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
-block-beta
-    columns 1
-    block:window["Context Window"]
-        columns 2
-        SP["System Prompt"]:1 SL["Static"]:1
-        TD["Tool Definitions"]:1 SS1["Semi-static"]:1
-        FS["Few-Shot Examples"]:1 SS2["Semi-static"]:1
-        RD["Retrieved Documents (RAG)"]:1 DY1["Dynamic"]:1
-        MU["Memory / User Profile"]:1 SD["Session-dependent"]:1
-        CH["Conversation History"]:1 DY2["Dynamic, growing"]:1
-        TR["Tool Results"]:1 DY3["Dynamic"]:1
-        CM["Current User Message"]:1 DY4["Dynamic"]:1
+flowchart TD
+    subgraph window ["Context Window"]
+        SP["System Prompt — Static"]:::service
+        TD["Tool Definitions — Semi-static"]:::service
+        FS["Few-Shot Examples — Semi-static"]:::service
+        RD["Retrieved Documents #40;RAG#41; — Dynamic"]:::client
+        MU["Memory / User Profile — Session-dependent"]:::observability
+        CH["Conversation History — Dynamic, growing"]:::client
+        TR["Tool Results — Dynamic"]:::client
+        CM["Current User Message — Dynamic"]:::client
+
+        SP --> TD --> FS --> RD --> MU --> CH --> TR --> CM
     end
-    RO["Reserved for Output — Must leave room"]
+
+    CM --> RO["Reserved for Output — Must leave room"]:::gateway
 
     classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
     classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
@@ -736,13 +737,6 @@ block-beta
     classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
     classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
     classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
-
-    class SP,TD,FS service
-    class RD,CH,TR,CM client
-    class MU observability
-    class RO gateway
-    class SL,SS1,SS2 data
-    class DY1,DY2,DY3,DY4,SD external
 ```
 
 ### 6.3 Context Window Management Strategies
