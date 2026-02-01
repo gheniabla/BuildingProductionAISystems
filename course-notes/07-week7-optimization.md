@@ -6,117 +6,107 @@
 
 ### 12.1 The Optimization Landscape
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    OPTIMIZATION TECHNIQUE OVERVIEW                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    subgraph chart ["OPTIMIZATION TECHNIQUE OVERVIEW: Quality vs Cost"]
+        direction TB
+        FP32["FP32\nBest quality, highest cost"]
+        FP16["FP16\nMinimal quality loss"]
+        FP8["FP8\nGood balance"]
+        INT8["INT8\nSignificant speedup"]
+        INT4["INT4\nMax compression, quality loss"]
 
-                          Quality
-                             ▲
-                             │
-                   ┌─────────┼─────────┐
-                   │         │         │
-         FP32 ●────┼─────────┼─────────┼──────  Best quality, highest cost
-                   │         │         │
-         FP16 ●────┼─────────┼─────────┼──────  Minimal quality loss
-                   │         │         │
-          FP8 ●────┼─────────┼─────────┼──────  Good balance
-                   │         │         │
-         INT8 ●────┼─────────┼─────────┼──────  Significant speedup
-                   │         │         │
-         INT4 ●────┼─────────┼─────────┼──────  Max compression, quality loss
-                   │         │         │
-                   └─────────┼─────────┘
-                             │
-   Cost/Latency ◄────────────┴────────────► Low
+        FP32 --> FP16 --> FP8 --> INT8 --> INT4
+    end
 
-   TECHNIQUE COMPARISON (approximate ranges — actual results vary by model and workload):
-   ┌─────────────────┬──────────────┬─────────────┬──────────────┬───────────┐
-   │ Technique       │ Speedup      │ Memory      │ Quality Loss │ Effort    │
-   ├─────────────────┼──────────────┼─────────────┼──────────────┼───────────┤
-   │ FP16/BF16       │ ~2x          │ ~50%        │ Negligible   │ Trivial   │
-   │ INT8 (PTQ)      │ ~2-4x        │ ~75%        │ Low          │ Low       │
-   │ INT8 (QAT)      │ ~2-4x        │ ~75%        │ Minimal      │ Medium    │
-   │ INT4 (GPTQ/AWQ) │ ~3-4x        │ ~87%        │ Moderate     │ Medium    │
-   │ Pruning         │ ~1.5-3x      │ 40-80%      │ Variable     │ High      │
-   │ Distillation    │ Varies*      │ Varies*     │ Moderate     │ High      │
-   │ Flash Attention │ ~2-4x**      │ O(N)→attn   │ None (exact) │ Trivial   │
-   │ Prompt Caching  │ Prefix only***│ -           │ None         │ Low       │
-   └─────────────────┴──────────────┴─────────────┴──────────────┴───────────┘
-   *   Distillation speedup depends entirely on student model size vs teacher
-   **  Flash Attention speedup per Dao et al. (2022), applies to attention
-       computation specifically, not full model inference
-   *** Prompt caching eliminates re-computation of cached prefixes; overall
-       request speedup depends on the ratio of cached to new tokens
+    quality["Higher Quality"] -.-> FP32
+    INT4 -.-> cost["Lower Cost / Latency"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class FP32 data
+    class FP16 data
+    class FP8 service
+    class INT8 external
+    class INT4 gateway
+    class quality,cost client
 ```
+
+TECHNIQUE COMPARISON (approximate ranges -- actual results vary by model and workload):
+
+| Technique       | Speedup        | Memory   | Quality Loss | Effort  |
+|-----------------|----------------|----------|--------------|---------|
+| FP16/BF16       | ~2x            | ~50%     | Negligible   | Trivial |
+| INT8 (PTQ)      | ~2-4x          | ~75%     | Low          | Low     |
+| INT8 (QAT)      | ~2-4x          | ~75%     | Minimal      | Medium  |
+| INT4 (GPTQ/AWQ) | ~3-4x          | ~87%     | Moderate     | Medium  |
+| Pruning         | ~1.5-3x        | 40-80%   | Variable     | High    |
+| Distillation    | Varies*        | Varies*  | Moderate     | High    |
+| Flash Attention | ~2-4x**        | O(N)->attn | None (exact) | Trivial |
+| Prompt Caching  | Prefix only*** | -        | None         | Low     |
+
+\* Distillation speedup depends entirely on student model size vs teacher
+\*\* Flash Attention speedup per Dao et al. (2022), applies to attention computation specifically, not full model inference
+\*\*\* Prompt caching eliminates re-computation of cached prefixes; overall request speedup depends on the ratio of cached to new tokens
 
 **Figure 12.1:** Optimization techniques comparison
 
 ### 12.2 Quantization Deep Dive
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         QUANTIZATION EXPLAINED                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph formats ["PRECISION FORMATS"]
+        direction TB
+        fp32["FP32 — 32 bits\nSign: 1, Exponent: 8, Mantissa: 23\nRange: +/-3.4 x 10^38"]
+        fp16["FP16 — 16 bits\nSign: 1, Exponent: 5, Mantissa: 10\nRange: +/-65504"]
+        bf16["BF16 — 16 bits\nSign: 1, Exponent: 8, Mantissa: 7\nRange: Same as FP32, less precision"]
+        int8["INT8 — 8 bits\nRange: -128 to 127"]
+    end
 
-   PRECISION FORMATS:
+    subgraph process ["QUANTIZATION PROCESS"]
+        direction TB
+        orig["Original FP32 weights\n-0.234, 0.891, -0.012, 0.567, -0.999, 0.123, 0.456, -0.789"]
+        scale["Determine scale and zero-point\nscale = (max - min) / 255 = 0.0074\nzero_point = round(-min / scale) = 135"]
+        quant["Quantized INT8 weights\n103, 255, 133, 212, 0, 152, 197, 28"]
+        orig --> scale --> quant
+    end
 
-   FP32 (32-bit float):     ████████████████████████████████  32 bits
-   Sign: 1 bit, Exponent: 8 bits, Mantissa: 23 bits
-   Range: ±3.4 × 10^38
+    subgraph ptq ["1. Post-Training Quantization — PTQ"]
+        direction LR
+        ptq_desc["Quantize after training\nNo retraining needed\nFaster to implement\nMay lose more quality"]
+        trained["Trained Model"] --> calibration["Calibration"] --> quantized_ptq["Quantized Model"]
+    end
 
-   FP16 (16-bit float):     ████████████████  16 bits
-   Sign: 1 bit, Exponent: 5 bits, Mantissa: 10 bits
-   Range: ±65504
+    subgraph qat ["2. Quantization-Aware Training — QAT"]
+        direction LR
+        qat_desc["Simulate quantization during training\nModel learns to be robust\nBetter quality preservation\nRequires retraining"]
+        fake_quant["Training with\nFake Quantization"] --> quantized_qat["Quantized Model"]
+    end
 
-   BF16 (bfloat16):         ████████████████  16 bits
-   Sign: 1 bit, Exponent: 8 bits, Mantissa: 7 bits
-   Range: Same as FP32, less precision
+    formats --> process
+    process --> ptq
+    process --> qat
 
-   INT8 (8-bit integer):    ████████  8 bits
-   Range: -128 to 127 (or 0-255 unsigned)
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-
-   QUANTIZATION PROCESS:
-
-   Original FP32 weights:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  -0.234  0.891  -0.012  0.567  -0.999  0.123  0.456  -0.789            │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   Determine scale and zero-point:
-   scale = (max - min) / 255 = (0.891 - (-0.999)) / 255 = 0.0074
-   zero_point = round(-min / scale) = 135
-
-                                    │
-                                    ▼
-   Quantized INT8 weights:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │     103    255    133    212      0    152    197     28                │
-   └─────────────────────────────────────────────────────────────────────────┘
-
-
-   QUANTIZATION TYPES:
-
-   1. Post-Training Quantization (PTQ)
-      ─────────────────────────────────
-      • Quantize after training
-      • No retraining needed
-      • Faster to implement
-      • May lose more quality
-
-      [Trained Model] ───▶ [Calibration] ───▶ [Quantized Model]
-
-
-   2. Quantization-Aware Training (QAT)
-      ──────────────────────────────────
-      • Simulate quantization during training
-      • Model learns to be robust to quantization
-      • Better quality preservation
-      • Requires retraining
-
-      [Training with Fake Quantization] ───▶ [Quantized Model]
+    class fp32,fp16,bf16,int8 service
+    class orig,scale,quant data
+    class trained,fake_quant external
+    class calibration observability
+    class quantized_ptq,quantized_qat client
+    class ptq_desc,qat_desc data
 ```
 
 **Figure 12.2:** Quantization fundamentals
@@ -231,65 +221,51 @@ def load_gptq_model(
 
 ### 12.3 Knowledge Distillation
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      KNOWLEDGE DISTILLATION                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph concept ["KNOWLEDGE DISTILLATION — CONCEPT"]
+        direction LR
+        teacher["Teacher Model — Large\nGPT-4 / Claude\n175B params\n\nComplex reasoning\nBroad knowledge\nHigh accuracy\nCost: $$$$$\nLatency: 2000ms"]
+        student["Student Model — Small\nGPT-4-mini\n8B params\n\nSimpler reasoning\nFocused knowledge\nGood accuracy\nCost: $\nLatency: 200ms"]
+        teacher -- "Transfer\nKnowledge" --> student
+    end
 
-   CONCEPT:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │   Teacher Model (Large)                Student Model (Small)            │
-   │   ┌─────────────────────┐             ┌─────────────────────┐          │
-   │   │                     │             │                     │          │
-   │   │   GPT-4 / Claude    │───────────▶│    GPT-4-mini       │          │
-   │   │   (175B params)     │  Transfer  │    (8B params)      │          │
-   │   │                     │  Knowledge │                     │          │
-   │   └─────────────────────┘             └─────────────────────┘          │
-   │                                                                         │
-   │   Capabilities:                       Capabilities:                     │
-   │   • Complex reasoning                 • Simpler reasoning               │
-   │   • Broad knowledge                   • Focused knowledge               │
-   │   • High accuracy                     • Good accuracy                   │
-   │                                                                         │
-   │   Cost: $$$$$                         Cost: $                           │
-   │   Latency: 2000ms                     Latency: 200ms                    │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph process ["DISTILLATION PROCESS"]
+        direction TB
+        step1["Step 1: Generate training data"]
+        query["Query"] --> teacherLLM["Teacher"] --> response["High-quality response"]
+        step2["Step 2: Train student on teacher outputs\nInput: Query\nTarget: Teacher response — soft labels\nLoss: KL divergence + task loss"]
+        step3["Step 3: Evaluate and iterate\nCompare student vs teacher on eval set\nAdd hard examples where student fails\nRepeat until quality target met"]
+        step1 --> query
+        response --> step2 --> step3
+    end
 
+    subgraph strategies ["DISTILLATION STRATEGIES"]
+        direction TB
+        s1["Response Distill\nTrain on teacher final outputs"]
+        s2["Logit Distillation\nMatch teacher probability distributions"]
+        s3["Feature Distillation\nMatch intermediate representations"]
+        s4["Chain-of-Thought\nInclude teacher reasoning in training"]
+        s5["Selective Distill\nFocus on hard/important examples"]
+    end
 
-   DISTILLATION PROCESS:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │   1. Generate training data with teacher                                │
-   │      ┌─────────────┐                                                    │
-   │      │   Query     │───▶ Teacher ───▶ High-quality response            │
-   │      └─────────────┘                                                    │
-   │                                                                         │
-   │   2. Train student on teacher outputs                                   │
-   │      ┌─────────────────────────────────────────────────────────────┐   │
-   │      │ Input: Query                                                 │   │
-   │      │ Target: Teacher's response (soft labels)                     │   │
-   │      │ Loss: KL divergence + task loss                             │   │
-   │      └─────────────────────────────────────────────────────────────┘   │
-   │                                                                         │
-   │   3. Evaluate and iterate                                               │
-   │      • Compare student vs teacher on eval set                          │
-   │      • Add hard examples where student fails                           │
-   │      • Repeat until quality target met                                 │
-   └─────────────────────────────────────────────────────────────────────────┘
+    concept --> process --> strategies
 
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-   DISTILLATION STRATEGIES:
-
-   ┌─────────────────────┬─────────────────────────────────────────────────┐
-   │ Strategy            │ Description                                     │
-   ├─────────────────────┼─────────────────────────────────────────────────┤
-   │ Response Distill    │ Train on teacher's final outputs               │
-   │ Logit Distillation  │ Match teacher's probability distributions      │
-   │ Feature Distillation│ Match intermediate representations             │
-   │ Chain-of-Thought    │ Include teacher's reasoning in training        │
-   │ Selective Distill   │ Focus on hard/important examples               │
-   └─────────────────────┴─────────────────────────────────────────────────┘
+    class teacher gateway
+    class student data
+    class query client
+    class teacherLLM service
+    class response data
+    class step1,step2,step3 service
+    class s1,s2,s3,s4,s5 external
 ```
 
 **Figure 12.3:** Knowledge distillation overview
@@ -460,71 +436,47 @@ def format_for_openai_finetuning(
 
 ### 13.1 Prompt Caching
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          PROMPT CACHING STRATEGIES                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph nocache ["WITHOUT CACHING — 6000+ redundant system tokens"]
+        direction TB
+        r1_nc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc1["Process ALL tokens"]
+        r2_nc["Req 2: System Prompt 2000 tok + User: Help"] --> proc2["Process ALL tokens"]
+        r3_nc["Req 3: System Prompt 2000 tok + User: Thanks"] --> proc3["Process ALL tokens"]
+    end
 
-   WITHOUT CACHING:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │  Request 1: [System Prompt (2000 tokens)][User: "Hi"]                  │
-   │             ────────────────────────────────────────▶ Process all      │
-   │                                                                         │
-   │  Request 2: [System Prompt (2000 tokens)][User: "Help"]                │
-   │             ────────────────────────────────────────▶ Process all      │
-   │                                                                         │
-   │  Request 3: [System Prompt (2000 tokens)][User: "Thanks"]              │
-   │             ────────────────────────────────────────▶ Process all      │
-   │                                                                         │
-   │  Total tokens processed: 6000+ system prompt tokens (redundant!)       │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph withcache ["WITH PROMPT CACHING — 4000+ tokens saved, 66% reduction"]
+        direction TB
+        r1_wc["Req 1: System Prompt 2000 tok + User: Hi"] --> proc_cache["Process and Cache"]
+        proc_cache --> kvcache["KV Cache\nStores computed attention states\nSystem prompt only"]
+        kvcache --> r2_wc["Req 2: Cached + User: Help\nProcess only new tokens"]
+        kvcache --> r3_wc["Req 3: Cached + User: Thanks\nProcess only new tokens"]
+    end
 
+    subgraph strategies ["CACHING STRATEGIES"]
+        direction TB
+        prefix["1. PREFIX CACHING\nSame prefix across requests\nBest for: System prompts, few-shot examples\nSavings: Significant token reduction\nImpl: Most LLM APIs support natively"]
+        semantic["2. SEMANTIC CACHING\nSimilar queries\nBest for: FAQ-style queries, repeated questions\nSavings: 100% for cache hits\nImpl: Embed query, search cache, return if similar"]
+        response_c["3. RESPONSE CACHING\nExact matches\nBest for: Deterministic queries, idempotent ops\nSavings: 100% for cache hits\nImpl: Hash request, lookup, return cached response"]
+    end
 
-   WITH PROMPT CACHING:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │  Request 1: [System Prompt (2000 tokens)][User: "Hi"]                  │
-   │             ─────────────────────────────────────────▶ Process & Cache │
-   │                    │                                                    │
-   │                    ▼                                                    │
-   │             ┌─────────────────┐                                         │
-   │             │  KV Cache       │  Stores computed attention states      │
-   │             │  (System only)  │                                         │
-   │             └────────┬────────┘                                         │
-   │                      │                                                  │
-   │  Request 2: [Cached──┘][User: "Help"]                                  │
-   │             ─────────────────────────▶ Process only new tokens         │
-   │                                                                         │
-   │  Request 3: [Cached──┘][User: "Thanks"]                                │
-   │             ─────────────────────────▶ Process only new tokens         │
-   │                                                                         │
-   │  Tokens saved: 4000+ (66% reduction!)                                  │
-   └─────────────────────────────────────────────────────────────────────────┘
+    nocache --> withcache --> strategies
 
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-   CACHING STRATEGIES:
-
-   1. PREFIX CACHING (Same prefix across requests)
-      ┌──────────────────────────────────────────────────────────────────────┐
-      │  Best for: System prompts, few-shot examples, shared context        │
-      │  Savings: Significant token reduction for shared prefixes             │
-      │  Implementation: Most LLM APIs support this natively                │
-      └──────────────────────────────────────────────────────────────────────┘
-
-   2. SEMANTIC CACHING (Similar queries)
-      ┌──────────────────────────────────────────────────────────────────────┐
-      │  Best for: FAQ-style queries, repeated questions                    │
-      │  Savings: 100% for cache hits                                       │
-      │  Implementation: Embed query → search cache → return if similar     │
-      └──────────────────────────────────────────────────────────────────────┘
-
-   3. RESPONSE CACHING (Exact matches)
-      ┌──────────────────────────────────────────────────────────────────────┐
-      │  Best for: Deterministic queries, idempotent operations             │
-      │  Savings: 100% for cache hits                                       │
-      │  Implementation: Hash request → lookup → return cached response     │
-      └──────────────────────────────────────────────────────────────────────┘
+    class r1_nc,r2_nc,r3_nc gateway
+    class proc1,proc2,proc3 gateway
+    class r1_wc client
+    class proc_cache service
+    class kvcache observability
+    class r2_wc,r3_wc data
+    class prefix,semantic,response_c external
 ```
 
 **Figure 13.1:** Prompt caching strategies
@@ -804,71 +756,53 @@ class CachedLLMService:
 
 ### 13.2 Batching Strategies
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         BATCHING STRATEGIES                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph static ["1. STATIC BATCHING\nWait for fixed batch size, then process\nPros: Simple, predictable\nCons: Latency for early requests"]
+        direction LR
+        s_r1["R1"] --> s_wait["Wait for\nbatch size"]
+        s_r2["R2"] --> s_wait
+        s_r3["R3"] --> s_wait
+        s_r4["R4"] --> s_wait
+        s_wait --> s_batch["Batch Process"] --> s_resp["All responses"]
+    end
 
-   1. STATIC BATCHING
-      ────────────────
-      Wait for fixed batch size, then process together.
+    subgraph dynamic ["2. DYNAMIC BATCHING\nProcess after timeout or size threshold\nPros: Better latency, adapts to traffic\nCons: More complex, variable batch sizes"]
+        direction LR
+        d_r1["R1"] --> d_timeout["Timeout\ntrigger"]
+        d_r2["R2"] --> d_timeout
+        d_timeout --> d_batch1["Batch R1,R2"] --> d_resp1["Responses"]
+        d_r3["R3"] --> d_size["Size\nthreshold"]
+        d_r4["R4"] --> d_size
+        d_r5["R5"] --> d_size
+        d_r6["R6"] --> d_size
+        d_size --> d_batch2["Batch R3-R6"] --> d_resp2["Responses"]
+    end
 
-      ┌─────────────────────────────────────────────────────────────────────┐
-      │  Time ──▶                                                           │
-      │                                                                     │
-      │  Requests:  R1 ─┐                                                   │
-      │             R2 ─┼─┐                                                 │
-      │             R3 ─┼─┼─┐                                               │
-      │             R4 ─┼─┼─┼──▶ [Batch Process] ──▶ All responses         │
-      │                 │ │ │                                               │
-      │                 Wait for batch                                      │
-      │                                                                     │
-      │  Pros: Simple, predictable                                         │
-      │  Cons: Latency for early requests, underutilized for sparse traffic│
-      └─────────────────────────────────────────────────────────────────────┘
+    subgraph continuous ["3. CONTINUOUS BATCHING — vLLM / TensorRT-LLM\nDynamically add/remove requests as they complete\nPros: Max GPU utilization, best throughput\nCons: Requires specialized serving engine"]
+        direction TB
+        c_state1["GPU: R1, R2, R3, __, __"]
+        c_event1["R2 completes, R4 joins"]
+        c_state2["GPU: R1, R4, R3, __, __"]
+        c_event2["R1 completes, R5 joins"]
+        c_state3["GPU: R5, R4, R3, __, __"]
+        c_state1 --> c_event1 --> c_state2 --> c_event2 --> c_state3
+    end
 
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-   2. DYNAMIC BATCHING
-      ─────────────────
-      Process available requests after timeout or size threshold.
-
-      ┌─────────────────────────────────────────────────────────────────────┐
-      │  Time ──▶                                                           │
-      │                                                                     │
-      │  Requests:  R1 ─┐                                                   │
-      │                 │ timeout                                           │
-      │             R2 ─┼──▶ [Batch R1,R2] ──▶ Responses                   │
-      │                                                                     │
-      │             R3 ─┐                                                   │
-      │             R4 ─┼                                                   │
-      │             R5 ─┼                                                   │
-      │             R6 ─┼──▶ [Batch R3-R6] ──▶ Responses (size threshold)  │
-      │                                                                     │
-      │  Pros: Better latency, adapts to traffic                           │
-      │  Cons: More complex, variable batch sizes                          │
-      └─────────────────────────────────────────────────────────────────────┘
-
-
-   3. CONTINUOUS BATCHING (vLLM/TensorRT-LLM)
-      ───────────────────────────────────────
-      Dynamically add/remove requests from batch as they complete.
-
-      ┌─────────────────────────────────────────────────────────────────────┐
-      │  Time ──▶                                                           │
-      │                                                                     │
-      │  GPU Batch:  [R1][R2][R3][__][__]                                   │
-      │                    │                                                │
-      │              R2 completes, R4 joins                                 │
-      │                    ▼                                                │
-      │              [R1][R4][R3][__][__]                                   │
-      │                    │                                                │
-      │              R1 completes, R5 joins                                 │
-      │                    ▼                                                │
-      │              [R5][R4][R3][__][__]                                   │
-      │                                                                     │
-      │  Pros: Maximum GPU utilization, best throughput                    │
-      │  Cons: Requires specialized serving engine                         │
-      └─────────────────────────────────────────────────────────────────────┘
+    class s_r1,s_r2,s_r3,s_r4,d_r1,d_r2,d_r3,d_r4,d_r5,d_r6 client
+    class s_wait,d_timeout,d_size external
+    class s_batch,d_batch1,d_batch2 service
+    class s_resp,d_resp1,d_resp2 data
+    class c_state1,c_state2,c_state3 service
+    class c_event1,c_event2 external
 ```
 
 **Figure 13.2:** Batching strategies comparison

@@ -20,82 +20,47 @@ The midterm covers material from Weeks 1-4:
 
 Retrieval-Augmented Generation (RAG) is the most common pattern for adding custom knowledge to LLMs:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    PRODUCTION RAG ARCHITECTURE                              │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Q["Query"]:::client
 
-                                ┌─────────────┐
-                                │   Query     │
-                                └──────┬──────┘
-                                       │
-                     ┌─────────────────┼─────────────────┐
-                     │                 │                 │
-                     ▼                 ▼                 ▼
-              ┌────────────┐   ┌────────────┐   ┌────────────┐
-              │   Query    │   │   Query    │   │   Query    │
-              │ Expansion  │   │ Embedding  │   │ Rewriting  │
-              └─────┬──────┘   └─────┬──────┘   └─────┬──────┘
-                    │                │                │
-                    └────────────────┼────────────────┘
-                                     │
-                                     ▼
-                    ┌────────────────────────────────┐
-                    │       RETRIEVAL LAYER          │
-                    │                                │
-                    │  ┌─────────────────────────┐   │
-                    │  │    Vector Search        │   │
-                    │  │    (Semantic)           │   │
-                    │  └────────────┬────────────┘   │
-                    │               │                │
-                    │  ┌────────────▼────────────┐   │
-                    │  │    Keyword Search       │   │
-                    │  │    (BM25/Sparse)        │   │
-                    │  └────────────┬────────────┘   │
-                    │               │                │
-                    │  ┌────────────▼────────────┐   │
-                    │  │    Hybrid Fusion        │   │
-                    │  │    (RRF/Linear)         │   │
-                    │  └────────────┬────────────┘   │
-                    └───────────────┼────────────────┘
-                                    │
-                                    ▼
-                    ┌────────────────────────────────┐
-                    │        RANKING LAYER           │
-                    │                                │
-                    │  ┌─────────────────────────┐   │
-                    │  │    Reranker Model       │   │
-                    │  │    (Cross-Encoder)      │   │
-                    │  └────────────┬────────────┘   │
-                    │               │                │
-                    │  ┌────────────▼────────────┐   │
-                    │  │    Contextual Filtering │   │
-                    │  │    (Metadata, Access)   │   │
-                    │  └────────────┬────────────┘   │
-                    └───────────────┼────────────────┘
-                                    │
-                                    ▼
-                    ┌────────────────────────────────┐
-                    │      CONTEXT ASSEMBLY          │
-                    │                                │
-                    │  • Context window management   │
-                    │  • Chunk ordering              │
-                    │  • Source attribution          │
-                    │  • Token counting              │
-                    └───────────────┬────────────────┘
-                                    │
-                                    ▼
-                    ┌────────────────────────────────┐
-                    │         GENERATION             │
-                    │                                │
-                    │  System Prompt + Context + Q   │
-                    │         │                      │
-                    │         ▼                      │
-                    │       [LLM]                    │
-                    │         │                      │
-                    │         ▼                      │
-                    │  Response + Citations          │
-                    └────────────────────────────────┘
+    Q --> QExp["Query Expansion"]:::service
+    Q --> QEmb["Query Embedding"]:::service
+    Q --> QRew["Query Rewriting"]:::service
+
+    QExp --> RL
+    QEmb --> RL
+    QRew --> RL
+
+    subgraph RL ["RETRIEVAL LAYER"]
+        VS["Vector Search\n(Semantic)"]:::data --> KS["Keyword Search\n(BM25/Sparse)"]:::data --> HF["Hybrid Fusion\n(RRF/Linear)"]:::data
+    end
+
+    RL --> RK
+
+    subgraph RK ["RANKING LAYER"]
+        RR["Reranker Model\n(Cross-Encoder)"]:::service --> CF["Contextual Filtering\n(Metadata, Access)"]:::service
+    end
+
+    RK --> CA
+
+    subgraph CA ["CONTEXT ASSEMBLY"]
+        CADesc["Context window management\nChunk ordering\nSource attribution\nToken counting"]:::observability
+    end
+
+    CA --> GEN
+
+    subgraph GEN ["GENERATION"]
+        Prompt["System Prompt + Context + Q"]:::external --> LLM["LLM"]:::service --> Resp["Response + Citations"]:::client
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 9.1:** Production RAG architecture
@@ -127,101 +92,87 @@ Retrieval-Augmented Generation (RAG) is the most common pattern for adding custo
                     │ or managed  │ or managed  │ only        │ costs
                     │ cloud       │ cloud       │             │
    (Check provider websites for current cloud pricing — rates change frequently)
+```
 
+**Decision Flowchart:**
 
-   DECISION FLOWCHART:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │   Do you need >10M vectors?                                            │
-   │        │                                                                │
-   │        ├── NO ──▶ Already using PostgreSQL?                            │
-   │        │              │                                                 │
-   │        │              ├── YES ──▶ pgvector (simple addition)           │
-   │        │              │                                                 │
-   │        │              └── NO ──▶ Want managed service?                 │
-   │        │                            │                                   │
-   │        │                            ├── YES ──▶ Pinecone               │
-   │        │                            │                                   │
-   │        │                            └── NO ──▶ Qdrant (best overall)   │
-   │        │                                                                │
-   │        └── YES ──▶ Need graph capabilities?                            │
-   │                       │                                                 │
-   │                       ├── YES ──▶ Weaviate                             │
-   │                       │                                                 │
-   │                       └── NO ──▶ Qdrant                                │
-   └─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    A{"Need >10M vectors?"}:::gateway
+
+    A -- NO --> B{"Already using\nPostgreSQL?"}:::gateway
+    B -- YES --> C["pgvector\n(simple addition)"]:::data
+    B -- NO --> D{"Want managed\nservice?"}:::gateway
+    D -- YES --> E["Pinecone"]:::external
+    D -- NO --> F["Qdrant\n(best overall)"]:::service
+
+    A -- YES --> G{"Need graph\ncapabilities?"}:::gateway
+    G -- YES --> H["Weaviate"]:::service
+    G -- NO --> I["Qdrant"]:::service
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 ### 9.3 Indexing Strategies
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    title["INDEX TYPE COMPARISON"]:::observability
+
+    title --> HNSW
+    title --> IVF
+    title --> FLAT
+
+    subgraph HNSW ["1. HNSW (Hierarchical Navigable Small World)"]
+        H_L3["Layer 3\n(Sparse connections)"]:::service --> H_L2["Layer 2\n(Medium connections)"]:::service --> H_L1["Layer 1\n(Dense connections)"]:::service
+        H_Perf["Build: O(n log n)\nQuery: O(log n)\nMemory: High"]:::external
+        H_Trade["+ Very fast queries\n+ High recall >95%\n- High memory usage\n- Slow index build"]:::data
+        H_Best["Best for: Most production use cases"]:::client
+    end
+
+    subgraph IVF ["2. IVFFlat (Inverted File Flat)"]
+        I_C1["Cell 1"]:::service --> I_V1["Vectors"]:::data
+        I_C2["Cell 2"]:::service --> I_V2["Vectors"]:::data
+        I_Ck["Cell k"]:::service --> I_Vk["Vectors"]:::data
+        I_Perf["Build: O(n)\nQuery: O(n/k)\nMemory: Medium"]:::external
+        I_Trade["+ Lower memory\n+ Fast build\n- Need to tune nprobe\n- Lower recall at speed"]:::data
+        I_Best["Best for: Memory-constrained,\nfrequently rebuilt"]:::client
+    end
+
+    subgraph FLAT ["3. Flat (Brute Force)"]
+        F_Perf["Query: O(n)\nMemory: Low"]:::external
+        F_Trade["+ Perfect recall\n+ Simple\n- Slow at scale"]:::data
+        F_Best["Best for: <10K vectors or\naccuracy-critical"]:::client
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         INDEX TYPE COMPARISON                               │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-   1. HNSW (Hierarchical Navigable Small World)
-      ──────────────────────────────────────────
+**HNSW Tuning Parameters:**
 
-      Structure:        Performance:           Trade-offs:
-      ┌────────┐        Build: O(n log n)      + Very fast queries
-      │ Layer 3│──┐     Query: O(log n)        + High recall (>95%)
-      └────────┘  │     Memory: High           - High memory usage
-           │      │                            - Slow index build
-      ┌────────┐  │
-      │ Layer 2│──┼──┐
-      └────────┘  │  │
-           │      │  │
-      ┌────────────────┐
-      │    Layer 1     │  (Dense connections)
-      └────────────────┘
-
-      Best for: Most production use cases
-
-
-   2. IVFFlat (Inverted File with Flat Quantization)
-      ───────────────────────────────────────────────
-
-      Structure:        Performance:           Trade-offs:
-      ┌─────┐           Build: O(n)            + Lower memory
-      │Cell │           Query: O(n/k)          + Fast build
-      │  1  │──●●●      Memory: Medium         - Need to tune nprobe
-      └─────┘                                  - Lower recall at speed
-      ┌─────┐
-      │Cell │──●●●●●
-      │  2  │
-      └─────┘
-      ┌─────┐
-      │Cell │──●●
-      │  k  │
-      └─────┘
-
-      Best for: Memory-constrained, frequently rebuilt
-
-
-   3. Flat (Brute Force)
-      ───────────────────
-
-      Performance:           Trade-offs:
-      Query: O(n)            + Perfect recall
-      Memory: Low            + Simple
-                             - Slow at scale
-
-      Best for: <10K vectors, or accuracy-critical with no latency needs
-
-
-   TUNING PARAMETERS:
-
-   HNSW:
-   ┌──────────────┬───────────────────┬─────────────────────────────────────┐
-   │ Parameter    │ Default           │ Effect                              │
-   ├──────────────┼───────────────────┼─────────────────────────────────────┤
-   │ m            │ 16                │ Connections per node. Higher = more │
-   │              │                   │ accuracy, more memory               │
-   │ ef_construct │ 200               │ Build quality. Higher = better      │
-   │              │                   │ index, slower build                 │
-   │ ef_search    │ 100               │ Query quality. Higher = more        │
-   │              │                   │ accuracy, slower query              │
-   └──────────────┴───────────────────┴─────────────────────────────────────┘
+```
+┌──────────────┬───────────────────┬─────────────────────────────────────┐
+│ Parameter    │ Default           │ Effect                              │
+├──────────────┼───────────────────┼─────────────────────────────────────┤
+│ m            │ 16                │ Connections per node. Higher = more │
+│              │                   │ accuracy, more memory               │
+│ ef_construct │ 200               │ Build quality. Higher = better      │
+│              │                   │ index, slower build                 │
+│ ef_search    │ 100               │ Query quality. Higher = more        │
+│              │                   │ accuracy, slower query              │
+└──────────────┴───────────────────┴─────────────────────────────────────┘
 ```
 
 ### 9.4 Chunking Strategies

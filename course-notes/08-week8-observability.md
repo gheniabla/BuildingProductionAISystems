@@ -14,55 +14,41 @@
 >
 > Traditional observability misses these failures because there are no errors, timeouts, or obvious crashes. Only AI-specific observability — tracking embedding dimensions, retrieval relevance scores, response quality metrics, and data lineage across the full pipeline — catches silent degradation before users do.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│            TRADITIONAL vs AI OBSERVABILITY                                  │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph comparison ["TRADITIONAL vs AI OBSERVABILITY"]
+        direction LR
+        traditional["Traditional Observability\n--- What ops teams track ---\nRequest latency\nError rates\nThroughput\nCPU/Memory usage\nDatabase queries"]
+        ai_obs["AI Observability\n--- What AI teams need ---\nAll traditional metrics PLUS:\nToken usage and costs\nModel response quality\nRetrieval relevance\nEmbedding drift\nPrompt variations\nHallucination detection\nSafety violations\nA/B test metrics"]
+        traditional -- "extends" --> ai_obs
+    end
 
-   TRADITIONAL OBSERVABILITY               AI OBSERVABILITY
-   (What ops teams track)                  (What AI teams need)
-   ────────────────────────                ────────────────────
+    subgraph pyramid ["THE AI OBSERVABILITY PYRAMID"]
+        direction TB
+        quality["QUALITY METRICS\nLLM-as-judge scores\nUser feedback, accuracy"]
+        traces["AI TRACES\nLLM calls, RAG steps\nTool invocations"]
+        business["BUSINESS METRICS\nTokens, costs\nLatency, throughput"]
+        infra["INFRASTRUCTURE\nLogs, metrics\nTraditional APM"]
 
-   • Request latency                       • Request latency
-   • Error rates                           • Error rates
-   • Throughput                            • Throughput
-   • CPU/Memory usage                      • CPU/Memory/GPU usage
-   • Database queries                      • Database queries
-                                          ────────────────────
-                                          PLUS:
-                                          • Token usage & costs
-                                          • Model response quality
-                                          • Retrieval relevance
-                                          • Embedding drift
-                                          • Prompt variations
-                                          • Hallucination detection
-                                          • Safety violations
-                                          • A/B test metrics
+        quality --> traces --> business --> infra
+    end
 
+    comparison --> pyramid
 
-   THE AI OBSERVABILITY PYRAMID:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │                           ┌─────────────┐                               │
-   │                           │  QUALITY    │  LLM-as-judge scores,        │
-   │                           │  METRICS    │  user feedback, accuracy     │
-   │                           └──────┬──────┘                               │
-   │                                  │                                      │
-   │                    ┌─────────────┴─────────────┐                        │
-   │                    │      AI TRACES            │  LLM calls, RAG steps, │
-   │                    │                           │  tool invocations      │
-   │                    └─────────────┬─────────────┘                        │
-   │                                  │                                      │
-   │          ┌───────────────────────┴───────────────────────┐              │
-   │          │            BUSINESS METRICS                   │              │
-   │          │  Tokens, costs, latency, throughput           │              │
-   │          └───────────────────────┬───────────────────────┘              │
-   │                                  │                                      │
-   │  ┌───────────────────────────────┴───────────────────────────────┐      │
-   │  │                   INFRASTRUCTURE                              │      │
-   │  │  Logs, metrics, traditional APM                               │      │
-   │  └───────────────────────────────────────────────────────────────┘      │
-   └─────────────────────────────────────────────────────────────────────────┘
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class traditional client
+    class ai_obs service
+    class quality observability
+    class traces service
+    class business external
+    class infra data
 ```
 
 **Figure 14.1:** The AI observability pyramid
@@ -877,103 +863,45 @@ class QualityMonitor:
 
 ### 15.2 Incident Response Playbooks
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    AI INCIDENT RESPONSE PLAYBOOK                            │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph classification ["INCIDENT CLASSIFICATION"]
+        direction TB
+        sev1["SEV1 - Critical\nComplete service outage\nData breach or security incident\nOver 50% of requests failing\nResponse: Immediate, all-hands"]
+        sev2["SEV2 - High\nSignificant quality degradation over 20% drop\nMajor feature broken\nCost spike over 200% normal\nResponse: Within 1 hour, primary team"]
+        sev3["SEV3 - Medium\nMinor quality issues\nElevated latency\nPartial feature degradation\nResponse: Within 4 hours, business hours"]
+        sev4["SEV4 - Low\nCosmetic issues\nNon-critical bugs\nResponse: Next business day"]
+    end
 
-   INCIDENT CLASSIFICATION:
-   ┌─────────────────┬──────────────────────────────────────────────────────┐
-   │ Severity        │ Criteria                                             │
-   ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ SEV1 - Critical │ • Complete service outage                           │
-   │                 │ • Data breach or security incident                   │
-   │                 │ • >50% of requests failing                          │
-   │                 │ Response: Immediate, all-hands                       │
-   ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ SEV2 - High     │ • Significant quality degradation (>20% drop)       │
-   │                 │ • Major feature broken                               │
-   │                 │ • Cost spike >200% normal                           │
-   │                 │ Response: Within 1 hour, primary team               │
-   ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ SEV3 - Medium   │ • Minor quality issues                              │
-   │                 │ • Elevated latency                                   │
-   │                 │ • Partial feature degradation                       │
-   │                 │ Response: Within 4 hours, business hours            │
-   ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ SEV4 - Low      │ • Cosmetic issues                                   │
-   │                 │ • Non-critical bugs                                  │
-   │                 │ Response: Next business day                         │
-   └─────────────────┴──────────────────────────────────────────────────────┘
+    trigger["TRIGGER: Quality score drops\nover 15% for over 10 minutes"]
 
+    step1["Step 1: ASSESS — 0-5 min\nCheck quality dashboard for affected dimensions\nIdentify if degradation is global or segment-specific\nReview recent deployments, last 24h\nCheck external dependencies like OpenAI status"]
+    step2["Step 2: MITIGATE — 5-15 min\nIf recent deployment: Rollback\nIf external dependency: Switch to fallback model\nEnable degraded mode, cached responses\nIf rate limiting: Scale up workers\nEnable request shedding for non-critical traffic"]
+    step3["Step 3: COMMUNICATE — 15-30 min\nUpdate status page\nNotify affected customers if user-facing\nPost in #incidents Slack channel\nPage additional responders if needed"]
+    step4["Step 4: RESOLVE — 30+ min\nIdentify root cause\nImplement fix with proper testing\nDeploy fix through normal pipeline\nVerify quality scores recovered\nUpdate status page: resolved"]
+    step5["Step 5: POST-MORTEM — 24-48h\nSchedule blameless post-mortem\nDocument timeline and actions\nIdentify what worked and what did not\nDefine action items to prevent recurrence\nAdd regression test cases\nUpdate runbooks if needed"]
 
-   PLAYBOOK: QUALITY DEGRADATION
-   ═══════════════════════════════
+    classification --> trigger
+    trigger --> step1 --> step2 --> step3 --> step4 --> step5
 
-   Trigger: Quality score drops >15% for >10 minutes
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │ Step 1: ASSESS (0-5 min)                                               │
-   │                                                                         │
-   │ □ Check quality dashboard for affected dimensions                      │
-   │ □ Identify if degradation is global or segment-specific               │
-   │ □ Review recent deployments (last 24h)                                 │
-   │ □ Check external dependencies (OpenAI status, etc.)                   │
-   │                                                                         │
-   │ Quick checks:                                                          │
-   │ $ curl -s https://status.openai.com/api/v2/status.json                │
-   │ $ kubectl get pods -n ai-prod                                          │
-   │ $ redis-cli INFO replication                                           │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │ Step 2: MITIGATE (5-15 min)                                            │
-   │                                                                         │
-   │ If recent deployment:                                                   │
-   │ □ Rollback: kubectl rollout undo deployment/ai-api -n ai-prod         │
-   │                                                                         │
-   │ If external dependency:                                                 │
-   │ □ Switch to fallback model/provider                                    │
-   │ □ Enable degraded mode (cached responses, simplified logic)           │
-   │                                                                         │
-   │ If rate limiting:                                                       │
-   │ □ Scale up workers                                                     │
-   │ □ Enable request shedding for non-critical traffic                    │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │ Step 3: COMMUNICATE (15-30 min)                                        │
-   │                                                                         │
-   │ □ Update status page                                                   │
-   │ □ Notify affected customers if user-facing                            │
-   │ □ Post in #incidents Slack channel                                    │
-   │ □ Page additional responders if needed                                │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │ Step 4: RESOLVE (30+ min)                                              │
-   │                                                                         │
-   │ □ Identify root cause                                                  │
-   │ □ Implement fix (with proper testing)                                 │
-   │ □ Deploy fix through normal pipeline                                  │
-   │ □ Verify quality scores recovered                                     │
-   │ □ Update status page: resolved                                        │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │ Step 5: POST-MORTEM (24-48h)                                           │
-   │                                                                         │
-   │ □ Schedule blameless post-mortem                                       │
-   │ □ Document timeline and actions                                        │
-   │ □ Identify what worked and what didn't                                │
-   │ □ Define action items to prevent recurrence                           │
-   │ □ Add regression test cases                                           │
-   │ □ Update runbooks if needed                                           │
-   └─────────────────────────────────────────────────────────────────────────┘
+    class sev1 gateway
+    class sev2 external
+    class sev3 service
+    class sev4 data
+    class trigger gateway
+    class step1 client
+    class step2 service
+    class step3 external
+    class step4 observability
+    class step5 data
 ```
 
 **Figure 15.2:** Incident response playbook

@@ -199,63 +199,46 @@ volumes:
 
 ### 10.2 Kubernetes for AI Services
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    KUBERNETES AI DEPLOYMENT ARCHITECTURE                    │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Ingress["Ingress Controller\n(NGINX / Traefik / ALB)"]:::gateway
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                          INGRESS CONTROLLER                             │
-   │                     (NGINX / Traefik / ALB)                            │
-   └─────────────────────────────────────────────────────┬───────────────────┘
-                                                         │
-                                                         │
-   ┌─────────────────────────────────────────────────────┼───────────────────┐
-   │                           NAMESPACE: ai-prod                            │
-   │                                                     │                   │
-   │   ┌─────────────────────────────────────────────────▼─────────────────┐ │
-   │   │                        SERVICE: api                               │ │
-   │   │                     (ClusterIP / LoadBalancer)                    │ │
-   │   └─────────────────────────────────────────────────┬─────────────────┘ │
-   │                                                     │                   │
-   │   ┌─────────────────────────────────────────────────┼─────────────────┐ │
-   │   │                   DEPLOYMENT: ai-api                              │ │
-   │   │                                                 │                 │ │
-   │   │    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │ │
-   │   │    │   Pod 1     │  │   Pod 2     │  │   Pod 3     │             │ │
-   │   │    │ ┌─────────┐ │  │ ┌─────────┐ │  │ ┌─────────┐ │             │ │
-   │   │    │ │   API   │ │  │ │   API   │ │  │ │   API   │ │             │ │
-   │   │    │ │Container│ │  │ │Container│ │  │ │Container│ │             │ │
-   │   │    │ └─────────┘ │  │ └─────────┘ │  │ └─────────┘ │             │ │
-   │   │    └─────────────┘  └─────────────┘  └─────────────┘             │ │
-   │   └───────────────────────────────────────────────────────────────────┘ │
-   │                                                                         │
-   │   ┌─────────────────────────────────────────────────────────────────┐   │
-   │   │                   DEPLOYMENT: celery-worker                     │   │
-   │   │                                                                 │   │
-   │   │    ┌─────────────┐  ┌─────────────┐                            │   │
-   │   │    │  Worker 1   │  │  Worker 2   │  (Scales independently)    │   │
-   │   │    └─────────────┘  └─────────────┘                            │   │
-   │   └─────────────────────────────────────────────────────────────────┘   │
-   │                                                                         │
-   │   ┌─────────────────────────────────────────────────────────────────┐   │
-   │   │                   STATEFULSET: vllm-gpu                         │   │
-   │   │                                                                 │   │
-   │   │    ┌─────────────────────────────────────────────────────────┐ │   │
-   │   │    │  vLLM Pod (GPU Node)                                    │ │   │
-   │   │    │  - NVIDIA A100 80GB                                     │ │   │
-   │   │    │  - Model: Llama-2-70b                                   │ │   │
-   │   │    │  - PVC: model-storage (500GB)                           │ │   │
-   │   │    └─────────────────────────────────────────────────────────┘ │   │
-   │   └─────────────────────────────────────────────────────────────────┘   │
-   │                                                                         │
-   │   ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────┐│
-   │   │ ConfigMap       │  │ Secret          │  │ HPA (Horizontal Pod    ││
-   │   │ - app-config    │  │ - api-keys      │  │      Autoscaler)       ││
-   │   │ - prompts       │  │ - db-creds      │  │ - min: 2, max: 10      ││
-   │   └─────────────────┘  └─────────────────┘  │ - target: 70% CPU      ││
-   │                                              └─────────────────────────┘│
-   └─────────────────────────────────────────────────────────────────────────┘
+    Ingress --> Svc
+
+    subgraph NS ["NAMESPACE: ai-prod"]
+        Svc["SERVICE: api\n(ClusterIP / LoadBalancer)"]:::service
+
+        Svc --> Pod1 & Pod2 & Pod3
+
+        subgraph Deploy ["DEPLOYMENT: ai-api"]
+            Pod1["Pod 1\nAPI Container"]:::client
+            Pod2["Pod 2\nAPI Container"]:::client
+            Pod3["Pod 3\nAPI Container"]:::client
+        end
+
+        subgraph Workers ["DEPLOYMENT: celery-worker"]
+            W1["Worker 1"]:::service
+            W2["Worker 2"]:::service
+        end
+
+        subgraph GPU ["STATEFULSET: vllm-gpu"]
+            VLLM["vLLM Pod - GPU Node\nNVIDIA A100 80GB\nModel: Llama-2-70b\nPVC: model-storage 500GB"]:::external
+        end
+
+        CM["ConfigMap\napp-config, prompts"]:::data
+        Secret["Secret\napi-keys, db-creds"]:::data
+        HPA["HPA\nmin: 2, max: 10\ntarget: 70% CPU"]:::observability
+    end
+
+    HPA -. scales .-> Deploy
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 10.1:** Kubernetes architecture for AI services
@@ -473,49 +456,34 @@ spec:
 
 ### 10.3 Hybrid Routing Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        HYBRID ROUTING ARCHITECTURE                          │
-│                    (Self-hosted + Managed API Mix)                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    GW["API Gateway\n(Router)"]:::gateway
 
-                              ┌─────────────────┐
-                              │  API Gateway    │
-                              │  (Router)       │
-                              └────────┬────────┘
-                                       │
-                    ┌──────────────────┼──────────────────┐
-                    │                  │                  │
-                    ▼                  ▼                  ▼
-           ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-           │  Fast/Cheap    │ │   Quality      │ │   Fallback     │
-           │  Requests      │ │   Requests     │ │   Pool         │
-           └───────┬────────┘ └───────┬────────┘ └───────┬────────┘
-                   │                  │                  │
-                   ▼                  ▼                  ▼
-           ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-           │  Self-hosted   │ │   OpenAI       │ │   Anthropic    │
-           │  vLLM          │ │   GPT-4        │ │   Claude       │
-           │  (Llama-70b)   │ │                │ │                │
-           └────────────────┘ └────────────────┘ └────────────────┘
+    GW --> Fast["Fast/Cheap\nRequests"]:::service
+    GW --> Quality["Quality\nRequests"]:::service
+    GW --> Fallback["Fallback\nPool"]:::service
 
+    Fast --> VLLM["Self-hosted vLLM\n(Llama-70b)"]:::data
+    Quality --> GPT4["OpenAI\nGPT-4"]:::external
+    Fallback --> Claude["Anthropic\nClaude"]:::external
 
-   ROUTING RULES:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │  IF user_tier == "enterprise" AND task == "complex":                   │
-   │      → Route to GPT-4                                                   │
-   │                                                                         │
-   │  ELIF estimated_tokens < 2000 AND latency_requirement < 500ms:         │
-   │      → Route to self-hosted vLLM                                        │
-   │                                                                         │
-   │  ELIF openai_rate_limit_hit:                                           │
-   │      → Route to Anthropic (fallback)                                    │
-   │                                                                         │
-   │  ELSE:                                                                  │
-   │      → Route to GPT-4-mini (cost-optimized)                            │
-   │                                                                         │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph Rules ["ROUTING RULES"]
+        R1["Enterprise + Complex\n--> GPT-4"]:::client
+        R2["Tokens < 2000 + Low Latency\n--> Self-hosted vLLM"]:::client
+        R3["OpenAI Rate Limit Hit\n--> Anthropic fallback"]:::client
+        R4["Default\n--> GPT-4-mini cost-optimized"]:::client
+    end
+
+    GW -. "evaluates" .-> Rules
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 10.2:** Hybrid routing for cost and quality optimization
@@ -669,78 +637,57 @@ class ModelRouter:
 
 ### 11.1 vLLM Architecture
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    subgraph API ["API Layer"]
+        EP["OpenAI-compatible endpoints\n/v1/completions\n/v1/chat/completions"]:::gateway
+    end
+
+    API --> SCHED
+
+    subgraph SCHED ["Scheduler & Batching"]
+        CB["Continuous Batching\nNew requests start as soon as old ones finish\n\nTraditional: slots idle until batch completes\nContinuous: slots reused immediately"]:::service
+    end
+
+    SCHED --> PAGED
+
+    subgraph PAGED ["PagedAttention Memory Manager"]
+        KV["KV Cache Management\n\nTraditional: pre-allocated, wasted space\nPagedAttention: dynamic page allocation/freeing\nMemory pages shared across requests"]:::observability
+    end
+
+    PAGED --> GPUS
+
+    subgraph GPUS ["GPU Execution"]
+        G0["GPU 0\nTensor Parallel"]:::external
+        G1["GPU 1\nTensor Parallel"]:::external
+        G2["GPU 2\nTensor Parallel"]:::external
+        G3["GPU 3\nTensor Parallel"]:::external
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         vLLM ARCHITECTURE                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                         API Layer                                       │
-   │                   (OpenAI-compatible endpoints)                         │
-   │              /v1/completions, /v1/chat/completions                     │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                      Scheduler & Batching                               │
-   │  ┌───────────────────────────────────────────────────────────────────┐ │
-   │  │                    Continuous Batching                             │ │
-   │  │                                                                    │ │
-   │  │  Traditional:    [Req1][Req1][Req1][ ][ ][ ]                      │ │
-   │  │  Batching        [Req2][Req2][ ][ ][ ][ ]                         │ │
-   │  │                  [Req3][Req3][Req3][Req3][ ][ ]                    │ │
-   │  │                                                                    │ │
-   │  │  Continuous:     [Req1][Req1][Req1][Req4][Req4]                    │ │
-   │  │  Batching        [Req2][Req2][Req5][Req5][Req5]                    │ │
-   │  │                  [Req3][Req3][Req3][Req3][Req6]                    │ │
-   │  │                                                                    │ │
-   │  │  ↑ New requests can start as soon as old ones finish              │ │
-   │  └───────────────────────────────────────────────────────────────────┘ │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                    PagedAttention Memory Manager                        │
-   │  ┌───────────────────────────────────────────────────────────────────┐ │
-   │  │                      KV Cache Management                           │ │
-   │  │                                                                    │ │
-   │  │  Traditional:   [████████████░░░░░░░░░░░░░░░] Wasted space        │ │
-   │  │                 [████████████████░░░░░░░░░░░]                      │ │
-   │  │                 [██████░░░░░░░░░░░░░░░░░░░░░]                      │ │
-   │  │                                                                    │ │
-   │  │  PagedAttention: ┌──┬──┬──┬──┬──┬──┬──┬──┐                        │ │
-   │  │                  │R1│R1│R2│R2│R2│R3│R1│R2│ Dynamic allocation    │ │
-   │  │                  └──┴──┴──┴──┴──┴──┴──┴──┘                        │ │
-   │  │                                                                    │ │
-   │  │  ↑ Memory pages allocated/freed as needed                         │ │
-   │  └───────────────────────────────────────────────────────────────────┘ │
-   └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                         GPU Execution                                   │
-   │                                                                         │
-   │    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
-   │    │   GPU 0     │  │   GPU 1     │  │   GPU 2     │  │   GPU 3     │  │
-   │    │ (Tensor     │  │ (Tensor     │  │ (Tensor     │  │ (Tensor     │  │
-   │    │  Parallel)  │  │  Parallel)  │  │  Parallel)  │  │  Parallel)  │  │
-   │    └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │
-   │                                                                         │
-   └─────────────────────────────────────────────────────────────────────────┘
+**Performance Characteristics:**
 
-   PERFORMANCE CHARACTERISTICS:
-   ┌─────────────────┬──────────────────────────────────────────────────────┐
-   │ Metric          │ vLLM vs Baseline                                     │
-   ├─────────────────┼──────────────────────────────────────────────────────┤
-   │ Throughput      │ 2-24x higher (depending on workload)*                │
-   │ Memory Usage    │ Near-optimal GPU memory utilization*                 │
-   │ Latency (p50)   │ Similar or better                                    │
-   │ Latency (p99)   │ Significantly better due to less queuing            │
-   │                 │                                                      │
-   │ * Per the vLLM paper: Kwon et al., "Efficient Memory Management      │
-   │   for Large Language Model Serving with PagedAttention" (2023)        │
-   │   https://arxiv.org/abs/2309.06180                                    │
-   └─────────────────┴──────────────────────────────────────────────────────┘
+```
+┌─────────────────┬──────────────────────────────────────────────────────┐
+│ Metric          │ vLLM vs Baseline                                     │
+├─────────────────┼──────────────────────────────────────────────────────┤
+│ Throughput      │ 2-24x higher (depending on workload)*                │
+│ Memory Usage    │ Near-optimal GPU memory utilization*                 │
+│ Latency (p50)   │ Similar or better                                    │
+│ Latency (p99)   │ Significantly better due to less queuing            │
+│                 │                                                      │
+│ * Per the vLLM paper: Kwon et al., "Efficient Memory Management      │
+│   for Large Language Model Serving with PagedAttention" (2023)        │
+│   https://arxiv.org/abs/2309.06180                                    │
+└─────────────────┴──────────────────────────────────────────────────────┘
 ```
 
 **Figure 11.1:** vLLM architecture with PagedAttention
@@ -794,61 +741,54 @@ if __name__ == "__main__":
 
 ### 11.2 Staged Rollouts and Canary Deployments
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         CANARY DEPLOYMENT STRATEGY                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    subgraph P1 ["PHASE 1: Initial Canary - 1 hour"]
+        T1["Traffic"]:::client
+        T1 -- "99%" --> S1["Stable"]:::service
+        T1 -- "1%" --> C1["Canary"]:::external
+        Cr1["error_rate < 0.1%\nlatency_p99 < 2x stable"]:::observability
+    end
 
-   PHASE 1: Initial Canary (1% traffic)
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │     Traffic ───┬───────────────────────────────────────▶ Stable (99%)  │
-   │                │                                                        │
-   │                └─▶ Canary (1%)                                          │
-   │                                                                         │
-   │     Duration: 1 hour                                                    │
-   │     Success criteria: error_rate < 0.1%, latency_p99 < 2x stable       │
-   └─────────────────────────────────────────────────────────────────────────┘
+    P1 -- "Pass" --> P2
 
-   PHASE 2: Expanded Canary (10% traffic)
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │     Traffic ───┬───────────────────────────────────────▶ Stable (90%)  │
-   │                │                                                        │
-   │                └───────────▶ Canary (10%)                               │
-   │                                                                         │
-   │     Duration: 2 hours                                                   │
-   │     Success criteria: same + user_satisfaction >= stable               │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph P2 ["PHASE 2: Expanded Canary - 2 hours"]
+        T2["Traffic"]:::client
+        T2 -- "90%" --> S2["Stable"]:::service
+        T2 -- "10%" --> C2["Canary"]:::external
+        Cr2["same + user_satisfaction >= stable"]:::observability
+    end
 
-   PHASE 3: 50/50 Split
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │     Traffic ───┬───────────────────────────────────────▶ Stable (50%)  │
-   │                │                                                        │
-   │                └───────────────────────────────────────▶ Canary (50%)  │
-   │                                                                         │
-   │     Duration: 4 hours                                                   │
-   │     Success criteria: full parity across all metrics                   │
-   └─────────────────────────────────────────────────────────────────────────┘
+    P2 -- "Pass" --> P3
 
-   PHASE 4: Full Rollout
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                                                                         │
-   │     Traffic ───────────────────────────────────────────▶ New (100%)    │
-   │                                                                         │
-   │     Keep old version for 24h for quick rollback                        │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph P3 ["PHASE 3: 50/50 Split - 4 hours"]
+        T3["Traffic"]:::client
+        T3 -- "50%" --> S3["Stable"]:::service
+        T3 -- "50%" --> C3["Canary"]:::external
+        Cr3["Full parity across all metrics"]:::observability
+    end
 
+    P3 -- "Pass" --> P4
 
-   AUTOMATIC ROLLBACK TRIGGERS:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  • Error rate > 1%                                                      │
-   │  • p99 latency > 3x baseline                                           │
-   │  • Cost per request > 2x baseline                                      │
-   │  • Quality score (LLM-judge) drops > 10%                               │
-   │  • Manual trigger from on-call engineer                                │
-   └─────────────────────────────────────────────────────────────────────────┘
+    subgraph P4 ["PHASE 4: Full Rollout"]
+        T4["Traffic"]:::client
+        T4 -- "100%" --> N4["New Version"]:::data
+        Note4["Keep old version 24h\nfor quick rollback"]:::observability
+    end
+
+    P1 -- "Fail" --> RB["AUTOMATIC ROLLBACK"]:::gateway
+    P2 -- "Fail" --> RB
+    P3 -- "Fail" --> RB
+
+    RB --- Triggers["Error rate > 1%\np99 latency > 3x baseline\nCost per request > 2x baseline\nQuality score drops > 10%\nManual trigger from on-call"]:::gateway
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 11.2:** Canary deployment strategy for AI services

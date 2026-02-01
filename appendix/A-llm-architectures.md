@@ -712,22 +712,28 @@ This decouples **model capacity** (total parameters) from **computational cost**
 
 In each MoE layer, the standard FFN is replaced by N expert FFNs and a **router**:
 
-```
-MoE Layer:
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    A["Input x"] --> B["Router: W_gate * x → logits for N experts"]
+    B --> C["Select top-K experts (typically K=2)"]
+    C --> D["Expert 1: FFN_1(x) * gate_1"]
+    C --> E["Expert 4: FFN_4(x) * gate_4"]
+    D --> F["Output = gate_1 * FFN_1(x) + gate_4 * FFN_4(x)"]
+    E --> F
 
-  Input x
-     |
-     v
-  [Router: W_gate * x --> logits for N experts]
-     |
-     v
-  Select top-K experts (typically K=2)
-     |
-     +-----> Expert 1: FFN_1(x)  * gate_1
-     +-----> Expert 4: FFN_4(x)  * gate_4
-     |
-     v
-  Output = gate_1 * FFN_1(x) + gate_4 * FFN_4(x)
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class A client
+    class B service
+    class C gateway
+    class D,E external
+    class F data
 ```
 
 **Router formulation**:
@@ -824,20 +830,34 @@ Simple MSE between actual noise and predicted noise.
 
 The denoising network is typically a **U-Net** — encoder-decoder with skip connections:
 
-```
-Input (x_t + t_emb)
-  |
-  [DownBlock] --> skip 1 --------+
-  [DownBlock] --> skip 2 -----+  |
-  [DownBlock] --> skip 3 --+  |  |
-  |                        |  |  |
-  [MiddleBlock + Attn]    |  |  |
-  |                        |  |  |
-  [UpBlock] <-- skip 3 ---+  |  |
-  [UpBlock] <-- skip 2 ------+  |
-  [UpBlock] <-- skip 1 ---------+
-  |
-Output (predicted noise)
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    IN["Input (x_t + t_emb)"] --> D1["DownBlock 1"]
+    D1 --> D2["DownBlock 2"]
+    D2 --> D3["DownBlock 3"]
+    D3 --> M["MiddleBlock + Attention"]
+    M --> U3["UpBlock 3"]
+    U3 --> U2["UpBlock 2"]
+    U2 --> U1["UpBlock 1"]
+    U1 --> OUT["Output (predicted noise)"]
+
+    D1 -- "skip 1" --> U1
+    D2 -- "skip 2" --> U2
+    D3 -- "skip 3" --> U3
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class IN client
+    class D1,D2,D3 service
+    class M observability
+    class U1,U2,U3 external
+    class OUT data
 ```
 
 Newer architectures (DiT) replace U-Net with a Transformer processing image patches as tokens.
@@ -846,8 +866,26 @@ Newer architectures (DiT) replace U-Net with a Transformer processing image patc
 
 Operating in pixel space is prohibitively expensive. **Latent Diffusion Models** operate in compressed space:
 
-```
-Image (512x512x3) --> [VAE Encoder] --> Latent (64x64x4) --> [Diffusion] --> [VAE Decoder] --> Image
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    A["Image (512x512x3)"] --> B["VAE Encoder"]
+    B --> C["Latent (64x64x4)"]
+    C --> D["Diffusion"]
+    D --> E["VAE Decoder"]
+    E --> F["Image"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class A,F data
+    class B,E service
+    class C external
+    class D observability
 ```
 
 ~64x computational reduction. Text conditioning via CLIP/T5 embeddings injected through cross-attention.

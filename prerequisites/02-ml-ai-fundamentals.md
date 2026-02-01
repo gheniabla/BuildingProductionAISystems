@@ -50,16 +50,17 @@ Regression: "What number should this be?"
 
 Two distinct phases in the life of any ML model:
 
-```
-+------------------+         +------------------+
-|    TRAINING      |         |    INFERENCE      |
-|                  |         |                  |
-| Feed data in     | ------> | Feed new input   |
-| Model learns     |  deploy | Model predicts   |
-| Slow, expensive  |         | Fast, cheap(er)  |
-| Done once/rarely |         | Done millions    |
-|                  |         |   of times       |
-+------------------+         +------------------+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    A["<b>TRAINING</b><br/>Feed data in<br/>Model learns<br/>Slow, expensive<br/>Done once/rarely"]
+    B["<b>INFERENCE</b><br/>Feed new input<br/>Model predicts<br/>Fast, cheaper<br/>Done millions of times"]
+    A -- deploy --> B
+
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    class A service
+    class B data
 ```
 
 - **Training** is the learning phase. You feed the model data, it adjusts itself, and this typically takes hours to months on expensive hardware.
@@ -82,17 +83,45 @@ Neural networks are the architecture behind modern AI. Here is just enough vocab
 
 ### The Building Blocks
 
-```
-        INPUTS          HIDDEN LAYERS           OUTPUT
-        ------          -------------           ------
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    x1["x1"] --> h1["n"]
+    x1 --> h2["n"]
+    x2["x2"] --> h1
+    x2 --> h2
+    x3["x3"] --> h1
+    x3 --> h2
+    h1 --> h3["n"]
+    h1 --> h4["n"]
+    h2 --> h3
+    h2 --> h4
+    h3 --> out["n"]
+    h4 --> out
+    out --> pred(["prediction"])
 
-        x1 ---\       /--- [n] ---\
-                \     /             \
-        x2 ------[n]------[n]-------[n]----> prediction
-                /     \             /
-        x3 ---/       \--- [n] ---/
+    subgraph Inputs
+        x1
+        x2
+        x3
+    end
+    subgraph Hidden Layers
+        h1
+        h2
+        h3
+        h4
+    end
+    subgraph Output
+        out
+        pred
+    end
 
-        Each [n] is a "neuron"
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    class x1,x2,x3 client
+    class h1,h2,h3,h4 service
+    class out,pred data
 ```
 
 - **Neuron** -- A tiny function that takes numbers in, multiplies them by weights, adds them up, and passes the result through an activation function. It is loosely inspired by biological neurons but the analogy should not be taken too far.
@@ -102,14 +131,26 @@ Neural networks are the architecture behind modern AI. Here is just enough vocab
 
 ### Forward Pass and Backpropagation
 
-```
-FORWARD PASS (left to right):
-  Input ---> Layer 1 ---> Layer 2 ---> ... ---> Output ---> Loss
-  "Here's the data, what do you predict?"       "How wrong were you?"
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    subgraph Forward Pass
+        direction LR
+        I1["Input"] -->|data| L1["Layer 1"] -->|data| L2["Layer 2"] -->|...| O1["Output"] -->|predict| Loss1["Loss"]
+    end
 
-BACKPROPAGATION (right to left):
-  Input <--- Layer 1 <--- Layer 2 <--- ... <--- Output <--- Loss
-  "Adjust your weights to be less wrong next time"
+    subgraph Backpropagation
+        direction RL
+        Loss2["Loss"] -->|error| O2["Output"] -->|adjust| L4["Layer 2"] -->|adjust| L3["Layer 1"] -->|adjust| I2["Input"]
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    class I1,I2 client
+    class L1,L2,L3,L4 service
+    class O1,O2 service
+    class Loss1,Loss2 external
 ```
 
 - **Forward pass** -- Data flows through the network, layer by layer, producing a prediction.
@@ -128,23 +169,33 @@ The transformer is the architecture behind GPT, Claude, LLaMA, and virtually eve
 
 Older models (RNNs) processed text one word at a time, left to right, like reading a sentence sequentially:
 
-```
-RNN (sequential -- slow):
-  "The"  -->  "cat"  -->  "sat"  -->  "on"  -->  "the"  -->  "mat"
-    |           |           |          |           |           |
-   [process] [process] [process] [process]  [process]  [process]
-    step 1    step 2    step 3    step 4     step 5     step 6
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    subgraph RNN["RNN (sequential -- slow)"]
+        direction LR
+        r1["The<br/>step 1"] -->|process| r2["cat<br/>step 2"] -->|process| r3["sat<br/>step 3"] -->|process| r4["on<br/>step 4"] -->|process| r5["the<br/>step 5"] -->|process| r6["mat<br/>step 6"]
+    end
+
+    subgraph Transformer["Transformer (parallel -- fast)"]
+        direction LR
+        t1["The"] --> P["Process all<br/>at once<br/>step 1"]
+        t2["cat"] --> P
+        t3["sat"] --> P
+        t4["on"] --> P
+        t5["the"] --> P
+        t6["mat"] --> P
+    end
+
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    class r1,r2,r3,r4,r5,r6 external
+    class t1,t2,t3,t4,t5,t6 service
+    class P data
 ```
 
-Transformers process all words simultaneously:
-
-```
-Transformer (parallel -- fast):
-  "The"    "cat"    "sat"    "on"    "the"    "mat"
-    |        |        |       |        |        |
-   [process all at once in parallel]
-                  step 1
-```
+Transformers process all words simultaneously, as shown above.
 
 This parallelization is why transformers can be trained on massive datasets using hundreds of GPUs. RNNs could not scale this way.
 
@@ -173,18 +224,26 @@ This is called **self-attention**: every token looks at every other token in the
 
 The original transformer had two halves:
 
-```
-+-------------------+       +-------------------+
-|     ENCODER       |       |     DECODER       |
-|                   |       |                   |
-| Reads the input   | ----> | Generates output  |
-| Builds            |       | One token at      |
-| understanding     |       | a time            |
-+-------------------+       +-------------------+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    E["<b>ENCODER</b><br/>Reads the input<br/>Builds understanding"]
+    D["<b>DECODER</b><br/>Generates output<br/>One token at a time"]
+    E --> D
 
-Encoder-only:  BERT (good for understanding/classification)
-Decoder-only:  GPT, Claude, LLaMA (good for generation)
-Encoder-Decoder: T5, original transformer (good for translation)
+    EO["<b>Encoder-only</b><br/>BERT<br/>Understanding &<br/>classification"]
+    DO["<b>Decoder-only</b><br/>GPT, Claude, LLaMA<br/>Generation"]
+    ED["<b>Encoder-Decoder</b><br/>T5, original transformer<br/>Translation"]
+
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    class E service
+    class D data
+    class EO client
+    class DO service
+    class ED external
 ```
 
 **For this course, the models that matter most are decoder-only** -- these are the LLMs you will be building with. They generate text one token at a time, left to right.
@@ -243,20 +302,20 @@ This is one reason LLMs surprised the field -- their abilities are not always pr
 
 Modern LLMs go through multiple stages:
 
-```
-+----------------+     +----------------+     +----------------+
-|  PRE-TRAINING  |     |  FINE-TUNING   |     |     RLHF       |
-|                |     |                |     |                |
-| Next-token     |---->| Instruction    |---->| Human feedback |
-| prediction on  |     | following on   |     | to align with  |
-| internet text  |     | curated Q&A    |     | human values   |
-|                |     | examples       |     |                |
-| "Raw knowledge"|     | "Learns to be  |     | "Learns to be  |
-|                |     |  a helpful     |     |  safe, honest, |
-|                |     |  assistant"    |     |  and useful"   |
-+----------------+     +----------------+     +----------------+
-   Base model       Supervised fine-tuned     Aligned model
-                          (SFT) model          (the product)
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    PT["<b>PRE-TRAINING</b><br/>Next-token prediction<br/>on internet text<br/><i>Raw knowledge</i><br/>&#8594; Base model"]
+    FT["<b>FINE-TUNING</b><br/>Instruction following<br/>on curated Q&amp;A examples<br/><i>Learns to be a<br/>helpful assistant</i><br/>&#8594; SFT model"]
+    RLHF["<b>RLHF</b><br/>Human feedback to<br/>align with human values<br/><i>Learns to be safe,<br/>honest, and useful</i><br/>&#8594; Aligned model"]
+    PT --> FT --> RLHF
+
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    class PT service
+    class FT data
+    class RLHF external
 ```
 
 - **Pre-training** creates a powerful text predictor (base model).
@@ -287,16 +346,26 @@ Why this matters for engineers:
 
 The context window is the total number of tokens the model can consider at once -- both your input and its output combined.
 
-```
-+-------------------------------------------------------+
-|                  CONTEXT WINDOW (e.g., 128K tokens)    |
-|                                                       |
-|  [ System prompt | Conversation history | New query ] |
-|  [            Your input (prompt)                   ] |
-|  [            Model output (completion)             ] |
-|                                                       |
-|  Everything must fit in this window.                  |
-+-------------------------------------------------------+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    subgraph CW["Context Window (e.g. 128K tokens)"]
+        direction LR
+        subgraph Input["Your input (prompt)"]
+            direction LR
+            SP["System<br/>prompt"] --> CH["Conversation<br/>history"] --> NQ["New<br/>query"]
+        end
+        subgraph Output["Model output"]
+            COMP["Completion"]
+        end
+        Input --> Output
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    class SP,CH,NQ client
+    class COMP data
 ```
 
 - Early GPT-3: 4K tokens (roughly 3,000 words)

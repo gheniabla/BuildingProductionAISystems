@@ -10,30 +10,42 @@ Every AI project begins the same way: excitement. You prompt a model, it generat
 
 Very hard, it turns out.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    THE DEMO-TO-PRODUCTION JOURNEY                          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   DEMO STAGE                         PRODUCTION STAGE                       │
-│   ──────────                         ────────────────                       │
-│   • Works on laptop                  • Works at scale                       │
-│   • Single user                      • Thousands concurrent                 │
-│   • Happy path only                  • All edge cases                       │
-│   • Cost ignored                     • Cost optimized                       │
-│   • Security ignored                 • Defense in depth                     │
-│   • "It usually works"               • 99.9% reliability                    │
-│   • Notebook cells                   • Production services                  │
-│                                                                             │
-│   Time: 2 hours                      Time: 2-6 months                       │
-│   Team: 1 person                     Team: 3-10 people                      │
-│                                                                             │
-│                    Most projects die here (see stats below)                  │
-│                               ────────┼────────                             │
-│                                       ↓                                     │
-│                              "The Valley of                                 │
-│                            Production Death"                                │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    subgraph DEMO["DEMO STAGE"]
+        D1["Works on laptop"]
+        D2["Single user"]
+        D3["Happy path only"]
+        D4["Cost ignored"]
+        D5["Security ignored"]
+        D6["'It usually works'"]
+        D7["Notebook cells"]
+        D8["Time: 2 hours\nTeam: 1 person"]
+    end
+
+    subgraph PROD["PRODUCTION STAGE"]
+        P1["Works at scale"]
+        P2["Thousands concurrent"]
+        P3["All edge cases"]
+        P4["Cost optimized"]
+        P5["Defense in depth"]
+        P6["99.9% reliability"]
+        P7["Production services"]
+        P8["Time: 2-6 months\nTeam: 3-10 people"]
+    end
+
+    DEMO -->|"Most projects die here"| VALLEY
+    VALLEY["The Valley of\nProduction Death"]:::danger
+    VALLEY --> PROD
+
+    classDef danger fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 1.1:** The journey from demo to production—where most AI projects fail
@@ -58,82 +70,94 @@ The common failure modes include:
 
 A production AI system is not just a model—it's an ecosystem of components working together:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    PRODUCTION AI SYSTEM ARCHITECTURE                        │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Users["Users"]:::client
+    Users -->|HTTPS| LB
 
-    ┌─────────┐
-    │  Users  │
-    └────┬────┘
-         │ HTTPS
-         ▼
-┌─────────────────┐     ┌──────────────────┐     ┌──────────────────┐
-│   Load Balancer │     │    CDN/Cache     │     │   WAF/Security   │
-└────────┬────────┘     └──────────────────┘     └──────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           API GATEWAY LAYER                                 │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐                   │
-│  │ Rate Limiting │  │ Auth/AuthZ    │  │ Request       │                   │
-│  │               │  │               │  │ Validation    │                   │
-│  └───────────────┘  └───────────────┘  └───────────────┘                   │
-└────────────────────────────────┬────────────────────────────────────────────┘
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         APPLICATION LAYER                                   │
-│  ┌───────────────────────────────────────────────────────────────────────┐ │
-│  │                         FastAPI Application                            │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │ │
-│  │  │ /chat       │  │ /embed      │  │ /retrieve   │  │ /health     │  │ │
-│  │  │ endpoint    │  │ endpoint    │  │ endpoint    │  │ endpoint    │  │ │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │ │
-│  └───────────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────┬────────────────────────────────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   GUARDRAILS    │     │   SERVICES      │     │   TASK QUEUE    │
-│  ┌───────────┐  │     │  ┌───────────┐  │     │  ┌───────────┐  │
-│  │ Input     │  │     │  │ LLM       │  │     │  │ Celery    │  │
-│  │ Sanitizer │  │     │  │ Service   │  │     │  │ Workers   │  │
-│  ├───────────┤  │     │  ├───────────┤  │     │  ├───────────┤  │
-│  │ Output    │  │     │  │ Retrieval │  │     │  │ Redis     │  │
-│  │ Validator │  │     │  │ Service   │  │     │  │ Broker    │  │
-│  ├───────────┤  │     │  ├───────────┤  │     │  └───────────┘  │
-│  │ PII       │  │     │  │ Embedding │  │     │                 │
-│  │ Filter    │  │     │  │ Service   │  │     │                 │
-│  └───────────┘  │     │  └───────────┘  │     │                 │
-└─────────────────┘     └────────┬────────┘     └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   LLM APIs      │     │   Vector DB     │     │   Data Stores   │
-│  ┌───────────┐  │     │  ┌───────────┐  │     │  ┌───────────┐  │
-│  │ OpenAI    │  │     │  │ Qdrant    │  │     │  │ PostgreSQL│  │
-│  ├───────────┤  │     │  │           │  │     │  ├───────────┤  │
-│  │ Anthropic │  │     │  │ Weaviate  │  │     │  │ Redis     │  │
-│  ├───────────┤  │     │  │           │  │     │  │ Cache     │  │
-│  │ Self-host │  │     │  │ Pinecone  │  │     │  └───────────┘  │
-│  │ (vLLM)    │  │     │  └───────────┘  │     │                 │
-│  └───────────┘  │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+    subgraph Edge["EDGE LAYER"]
+        LB["Load Balancer"]:::gateway
+        CDN["CDN / Cache"]:::gateway
+        WAF["WAF / Security"]:::gateway
+    end
 
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        OBSERVABILITY LAYER                                  │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌─────────────┐  │
-│  │ Traces        │  │ Metrics       │  │ Logs          │  │ Alerts      │  │
-│  │ (LangSmith)   │  │ (Prometheus)  │  │ (Structured)  │  │ (PagerDuty) │  │
-│  └───────────────┘  └───────────────┘  └───────────────┘  └─────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────┘
+    LB --> GW
+
+    subgraph GW["API GATEWAY LAYER"]
+        RL["Rate Limiting"]:::gateway
+        Auth["Auth / AuthZ"]:::gateway
+        RV["Request Validation"]:::gateway
+    end
+
+    GW --> APP
+
+    subgraph APP["APPLICATION LAYER — FastAPI"]
+        Chat["/chat endpoint"]:::service
+        Embed["/embed endpoint"]:::service
+        Retrieve["/retrieve endpoint"]:::service
+        Health["/health endpoint"]:::service
+    end
+
+    APP --> Guards
+    APP --> Services
+    APP --> TaskQ
+
+    subgraph Guards["GUARDRAILS"]
+        InputSan["Input Sanitizer"]:::service
+        OutputVal["Output Validator"]:::service
+        PII["PII Filter"]:::service
+    end
+
+    subgraph Services["SERVICES"]
+        LLMSvc["LLM Service"]:::service
+        RetSvc["Retrieval Service"]:::service
+        EmbSvc["Embedding Service"]:::service
+    end
+
+    subgraph TaskQ["TASK QUEUE"]
+        Celery["Celery Workers"]:::service
+        RedisBrk["Redis Broker"]:::service
+    end
+
+    Services --> LLMAPIs
+    Services --> VectorDB
+    Services --> DataStores
+
+    subgraph LLMAPIs["LLM APIs"]
+        OpenAI["OpenAI"]:::external
+        Anthropic["Anthropic"]:::external
+        SelfHost["Self-host (vLLM)"]:::external
+    end
+
+    subgraph VectorDB["VECTOR DB"]
+        Qdrant["Qdrant"]:::data
+        Weaviate["Weaviate"]:::data
+        Pinecone["Pinecone"]:::data
+    end
+
+    subgraph DataStores["DATA STORES"]
+        Postgres["PostgreSQL"]:::data
+        RedisCache["Redis Cache"]:::data
+    end
+
+    LLMAPIs --> Obs
+    VectorDB --> Obs
+    DataStores --> Obs
+
+    subgraph Obs["OBSERVABILITY LAYER"]
+        Traces["Traces (LangSmith)"]:::observability
+        Metrics["Metrics (Prometheus)"]:::observability
+        Logs["Logs (Structured)"]:::observability
+        Alerts["Alerts (PagerDuty)"]:::observability
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 1.2:** Complete production AI system architecture
@@ -171,41 +195,30 @@ Each layer serves a critical purpose:
 
 Production AI engineering is fundamentally about trade-offs. Here are the primary tensions:
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+quadrantChart
+    title The Four Trade-off Dimensions
+    x-axis Velocity --> Reliability
+    y-axis Cost --> Quality
+    quadrant-1 Expensive & Slow
+    quadrant-2 Ideal (myth)
+    quadrant-3 Cheap & Fast
+    quadrant-4 Robust but Basic
+    Startup MVP: [0.2, 0.3]
+    Healthcare App: [0.7, 0.9]
+    High-Volume Consumer: [0.5, 0.2]
+    Enterprise B2B: [0.8, 0.6]
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        THE FOUR TRADE-OFF DIMENSIONS                        │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-                              QUALITY
-                                 ▲
-                                 │
-                    ┌────────────┼────────────┐
-                    │            │            │
-                    │   Ideal    │   Expensive│
-                    │   (myth)   │   & Slow   │
-                    │            │            │
-    VELOCITY ◄──────┼────────────┼────────────┼──────► RELIABILITY
-                    │            │            │
-                    │   Cheap    │   Robust   │
-                    │   & Fast   │   but Basic│
-                    │            │            │
-                    └────────────┼────────────┘
-                                 │
-                                 ▼
-                               COST
+**Trade-off Decisions in Practice:**
 
-
-   TRADE-OFF DECISIONS IN PRACTICE:
-
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  Scenario                    │  Trade-off Decision                      │
-   ├─────────────────────────────────────────────────────────────────────────┤
-   │  Startup MVP                 │  Velocity > Reliability > Cost > Quality │
-   │  Healthcare Application      │  Quality > Reliability > Cost > Velocity │
-   │  High-Volume Consumer App    │  Cost > Reliability > Velocity > Quality │
-   │  Enterprise B2B              │  Reliability > Quality > Cost > Velocity │
-   └─────────────────────────────────────────────────────────────────────────┘
-```
+| Scenario | Trade-off Decision |
+|----------|-------------------|
+| Startup MVP | Velocity > Reliability > Cost > Quality |
+| Healthcare Application | Quality > Reliability > Cost > Velocity |
+| High-Volume Consumer App | Cost > Reliability > Velocity > Quality |
+| Enterprise B2B | Reliability > Quality > Cost > Velocity |
 
 **Figure 1.3:** The four dimensions of production trade-offs
 
@@ -283,10 +296,17 @@ Production AI systems typically follow one of these patterns:
 
 The simplest pattern—direct API calls to an LLM provider:
 
-```
-┌──────────┐     ┌──────────┐     ┌──────────┐
-│  Client  │────▶│   API    │────▶│  OpenAI  │
-└──────────┘     └──────────┘     └──────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    Client["Client"]:::client --> API["API"]:::service --> OpenAI["OpenAI"]:::external
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Use when:** Simple chatbots, content generation, straightforward Q&A
@@ -296,53 +316,25 @@ The simplest pattern—direct API calls to an LLM provider:
 
 Combines LLM with external knowledge:
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        RAG ARCHITECTURE                          │
-└──────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Query["Query"]:::client
+    Query --> Embed["Embedding Model"]:::service
+    Query --> Rewrite["Rewrite Query"]:::service
+    Embed --> VSearch["Vector DB Search"]:::data
+    Rewrite --> VSearch
+    VSearch --> Rerank["Reranker (Optional)"]:::service
+    Rerank --> Context["Context Assembly"]:::service
+    Context --> LLM["LLM Generation"]:::external
+    LLM --> Response["Response"]:::client
 
-                         ┌─────────────┐
-                         │   Query     │
-                         └──────┬──────┘
-                                │
-                    ┌───────────┴───────────┐
-                    │                       │
-                    ▼                       ▼
-           ┌───────────────┐       ┌───────────────┐
-           │   Embedding   │       │   Rewrite     │
-           │   Model       │       │   Query       │
-           └───────┬───────┘       └───────┬───────┘
-                   │                       │
-                   └───────────┬───────────┘
-                               │
-                               ▼
-                      ┌───────────────┐
-                      │   Vector DB   │
-                      │   Search      │
-                      └───────┬───────┘
-                              │
-                              ▼
-                      ┌───────────────┐
-                      │   Reranker    │
-                      │   (Optional)  │
-                      └───────┬───────┘
-                              │
-                              ▼
-                      ┌───────────────┐
-                      │   Context     │
-                      │   Assembly    │
-                      └───────┬───────┘
-                              │
-                              ▼
-                      ┌───────────────┐
-                      │   LLM         │
-                      │   Generation  │
-                      └───────┬───────┘
-                              │
-                              ▼
-                      ┌───────────────┐
-                      │   Response    │
-                      └───────────────┘
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Use when:** Customer support, documentation Q&A, knowledge bases
@@ -352,40 +344,31 @@ Combines LLM with external knowledge:
 
 AI that can take actions and use tools:
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                      AGENTIC ARCHITECTURE                        │
-└──────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    UserTask["User Task"]:::client --> AgentCore
 
-                    ┌─────────────────┐
-                    │   User Task     │
-                    └────────┬────────┘
-                             │
-                             ▼
-              ┌──────────────────────────┐
-              │      AGENT CORE          │
-              │  ┌────────────────────┐  │
-              │  │  Planning Module   │  │
-              │  │  (Task Decomp.)    │  │
-              │  └─────────┬──────────┘  │
-              │            │             │
-              │  ┌─────────▼──────────┐  │
-              │  │  Reasoning Loop    │◀─┼──┐
-              │  │  (Think/Act/Obs)   │  │  │
-              │  └─────────┬──────────┘  │  │
-              │            │             │  │
-              └────────────┼─────────────┘  │
-                           │                │
-         ┌─────────────────┼────────────────┼────────────┐
-         │                 │                │            │
-         ▼                 ▼                ▼            │
-   ┌───────────┐    ┌───────────┐    ┌───────────┐      │
-   │   Tool:   │    │   Tool:   │    │   Tool:   │      │
-   │   Search  │    │   Code    │    │   API     │──────┘
-   │           │    │   Exec    │    │   Call    │
-   └───────────┘    └───────────┘    └───────────┘
+    subgraph AgentCore["AGENT CORE"]
+        Planning["Planning Module\n(Task Decomposition)"]:::service
+        Reasoning["Reasoning Loop\n(Think / Act / Observe)"]:::service
+        Planning --> Reasoning
+    end
 
-   OBSERVATION FEEDBACK LOOP
+    Reasoning --> Search["Tool: Search"]:::external
+    Reasoning --> Code["Tool: Code Exec"]:::external
+    Reasoning --> API["Tool: API Call"]:::external
+
+    Search -->|"Observation"| Reasoning
+    Code -->|"Observation"| Reasoning
+    API -->|"Observation"| Reasoning
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Use when:** Complex multi-step tasks, code generation, research
@@ -399,51 +382,29 @@ AI that can take actions and use tools:
 
 Before building production systems, let's ensure a solid understanding of what we're deploying:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     TRANSFORMER ARCHITECTURE (Simplified)                   │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Input["Input: 'The cat sat on the'"]:::client
+    Input --> Tokenize["TOKENIZATION\nTokens → IDs: 1234, 5678, 9012, 345, 1234"]:::service
+    Tokenize --> Embed["TOKEN EMBEDDING + POSITIONAL\nEach token → 4096-dim vector\nPosition info encoded"]:::service
+    Embed --> TransBlock
 
-     Input: "The cat sat on the"
-            │
-            ▼
-    ┌───────────────────┐
-    │    TOKENIZATION   │    "The" "cat" "sat" "on" "the"
-    │                   │      │     │     │    │    │
-    └─────────┬─────────┘      ▼     ▼     ▼    ▼    ▼
-              │           [1234] [5678] [9012] [345] [1234]
-              │
-              ▼
-    ┌───────────────────┐
-    │  TOKEN EMBEDDING  │    Each token → 4096-dim vector
-    │  + POSITIONAL     │    Position info encoded
-    └─────────┬─────────┘
-              │
-              ▼
-    ┌───────────────────┐
-    │                   │
-    │   TRANSFORMER     │◀──┐
-    │   BLOCK × N       │   │  Repeated 32-128 times
-    │                   │   │
-    │  ┌─────────────┐  │   │
-    │  │ Self-       │  │   │
-    │  │ Attention   │  │   │
-    │  └──────┬──────┘  │   │
-    │         │         │   │
-    │  ┌──────▼──────┐  │   │
-    │  │ Feed-       │  │   │
-    │  │ Forward     │  │   │
-    │  └──────┬──────┘  │   │
-    │         │         │   │
-    └─────────┼─────────┘   │
-              │             │
-              └─────────────┘
-              │
-              ▼
-    ┌───────────────────┐
-    │  OUTPUT HEAD      │    Project to vocabulary size
-    │  + SOFTMAX        │    Pick next token: "mat" (p=0.34)
-    └───────────────────┘
+    subgraph TransBlock["TRANSFORMER BLOCK x N (Repeated 32-128 times)"]
+        Attention["Self-Attention"]:::service
+        FFN["Feed-Forward Network"]:::service
+        Attention --> FFN
+    end
+
+    FFN -->|"Loop back\nfor N layers"| Attention
+    TransBlock --> OutputHead["OUTPUT HEAD + SOFTMAX\nProject to vocabulary size\nNext token: 'mat' (p=0.34)"]:::external
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 2.1:** Simplified transformer architecture
@@ -512,54 +473,34 @@ print(f"Estimated cost: ${cost:.4f}")  # ~$0.0163
 
 #### API-Based vs. Self-Hosted Models
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    MODEL DEPLOYMENT DECISION MATRIX                         │
-└─────────────────────────────────────────────────────────────────────────────┘
+| Dimension | API-Based | Self-Hosted |
+|-----------|-----------|-------------|
+| **Setup Time** | Minutes | Days to Weeks |
+| **Upfront Cost** | $0 | $10K-$500K (GPUs) |
+| **Marginal Cost** | $0.00015-$0.015 per 1K tokens | Compute + Ops |
+| **Latency** | 500ms-3s (network + compute) | 100ms-1s (compute) |
+| **Data Privacy** | Data leaves your infra | Data stays local |
+| **Customization** | Prompting, some fine-tuning | Full control |
+| **Reliability** | Provider SLA (99.9%) | Your responsibility |
+| **Best For** | Most use cases, MVPs, quality-critical tasks | High volume, privacy requirements, latency |
 
-                       │         API-BASED              │       SELF-HOSTED
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Setup Time          │  Minutes                       │  Days to Weeks
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Upfront Cost        │  $0                            │  $10K-$500K (GPUs)
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Marginal Cost       │  $0.00015-$0.015 per 1K tokens  │  Compute + Ops
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Latency             │  500ms-3s (network + compute)  │  100ms-1s (compute)
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Data Privacy        │  Data leaves your infra        │  Data stays local
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Customization       │  Prompting, some fine-tuning   │  Full control
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Reliability         │  Provider SLA (99.9%)          │  Your responsibility
-   ────────────────────┼────────────────────────────────┼──────────────────────
-   Best For            │  Most use cases, MVPs,         │  High volume, privacy
-                       │  quality-critical tasks        │  requirements, latency
-   ────────────────────┴────────────────────────────────┴──────────────────────
+**Decision Flowchart:**
 
-   DECISION FLOWCHART:
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    Q1{"Do you process\n>1M requests/day?"}:::service
+    Q1 -->|YES| SH1["Consider self-hosted"]:::external
+    Q1 -->|NO| Q2{"Do you have strict\ndata residency needs?"}:::service
+    Q2 -->|YES| SH2["Self-hosted\nor Azure OpenAI"]:::external
+    Q2 -->|NO| API["Use API\n(OpenAI / Anthropic)"]:::data
 
-   ┌─────────────────────────────┐
-   │ Do you process >1M         │
-   │ requests/day?              │
-   └─────────────┬───────────────┘
-                 │
-        ┌────────┴────────┐
-        │ YES             │ NO
-        ▼                 ▼
-   ┌─────────────┐   ┌─────────────────────────┐
-   │ Consider    │   │ Do you have strict      │
-   │ self-hosted │   │ data residency needs?   │
-   └─────────────┘   └───────────┬─────────────┘
-                                 │
-                        ┌────────┴────────┐
-                        │ YES             │ NO
-                        ▼                 ▼
-                   ┌─────────────┐   ┌─────────────┐
-                   │ Self-hosted │   │ Use API     │
-                   │ or Azure    │   │ (OpenAI/    │
-                   │ OpenAI      │   │ Anthropic)  │
-                   └─────────────┘   └─────────────┘
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 ```
 
 **Figure 2.2:** Decision framework for model deployment approach

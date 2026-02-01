@@ -262,47 +262,55 @@ class ErrorResponse(BaseModel):
 
 AI endpoints have unique patterns that differ from traditional CRUD APIs:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    AI API PATTERNS vs TRADITIONAL APIs                      │
-└─────────────────────────────────────────────────────────────────────────────┘
+**AI API vs Traditional REST API:**
 
-   Traditional REST API                │  AI API
-   ────────────────────                │  ──────
-   GET /users/123                      │  POST /chat/completions
-   Fast (10-50ms)                      │  Slow (500-5000ms)
-   Deterministic                       │  Non-deterministic
-   Cacheable                           │  Rarely cacheable
-   Small payloads (1-10KB)             │  Large payloads (10-500KB)
-   Fixed response shape                │  Variable response length
+| Aspect | Traditional REST API | AI API |
+|---|---|---|
+| Example | `GET /users/123` | `POST /chat/completions` |
+| Speed | Fast (10-50ms) | Slow (500-5000ms) |
+| Behavior | Deterministic | Non-deterministic |
+| Caching | Cacheable | Rarely cacheable |
+| Payload size | Small (1-10KB) | Large (10-500KB) |
+| Response shape | Fixed | Variable length |
 
-   PATTERNS FOR AI ENDPOINTS:
+**Patterns for AI Endpoints:**
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  1. SYNCHRONOUS (Simple, blocking)                                      │
-   │     Client ──POST──▶ Server ──waits──▶ Response                        │
-   │     Best for: < 5 second responses, simple UX                          │
-   └─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+sequenceDiagram
+    participant C as Client
+    participant S as Server
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  2. STREAMING (SSE)                                                     │
-   │     Client ──POST──▶ Server ──token──▶──token──▶──token──▶ [DONE]     │
-   │     Best for: Chat interfaces, real-time feedback                      │
-   └─────────────────────────────────────────────────────────────────────────┘
+    rect rgb(209, 250, 229)
+        Note over C,S: 1. SYNCHRONOUS (Simple, blocking)<br/>Best for: less than 5s responses, simple UX
+        C->>+S: POST /chat/completions
+        S-->>-C: Response
+    end
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  3. ASYNC (Job-based)                                                   │
-   │     Client ──POST──▶ Server ──202 + job_id──▶ Client                  │
-   │     Client ──GET /jobs/{id}──▶ Server ──status/result──▶ Client       │
-   │     Best for: Long-running tasks, batch processing                     │
-   └─────────────────────────────────────────────────────────────────────────┘
+    rect rgb(254, 243, 199)
+        Note over C,S: 2. STREAMING (SSE)<br/>Best for: Chat interfaces, real-time feedback
+        C->>+S: POST /chat/completions (stream=true)
+        S-->>C: token
+        S-->>C: token
+        S-->>C: token
+        S-->>-C: [DONE]
+    end
 
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  4. WEBHOOK (Callback)                                                  │
-   │     Client ──POST + callback_url──▶ Server ──202──▶ Client            │
-   │     Server ──processes──▶ Server ──POST result──▶ callback_url        │
-   │     Best for: External integrations, guaranteed delivery               │
-   └─────────────────────────────────────────────────────────────────────────┘
+    rect rgb(209, 250, 229)
+        Note over C,S: 3. ASYNC (Job-based)<br/>Best for: Long-running tasks, batch processing
+        C->>+S: POST /chat/completions
+        S-->>-C: 202 + job_id
+        C->>+S: GET /jobs/{id}
+        S-->>-C: status / result
+    end
+
+    rect rgb(254, 243, 199)
+        Note over C,S: 4. WEBHOOK (Callback)<br/>Best for: External integrations, guaranteed delivery
+        C->>+S: POST /chat/completions + callback_url
+        S-->>-C: 202 Accepted
+        Note right of S: Server processes request...
+        S->>C: POST result to callback_url
+    end
 ```
 
 **Figure 3.1:** API patterns for AI workloads
@@ -595,47 +603,30 @@ def setup_error_handlers(app):
 
 AI workloads are I/O-bound. While waiting for an LLM response, your server could handle other requests:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    SYNC vs ASYNC: HANDLING 3 REQUESTS                       │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+sequenceDiagram
+    participant W as Worker
 
-   SYNCHRONOUS (1 worker):
+    rect rgb(254, 202, 202)
+        Note over W: SYNCHRONOUS (1 worker) — Total: 4500ms — 0.67 req/sec
+        W->>W: Req 1 (0–1000ms)
+        W->>W: Req 2 (1000–2000ms)
+        W->>W: Req 3 (2000–4500ms)
+    end
 
-   Time ──▶  0ms        1000ms      2000ms      3000ms      4500ms
-            │           │           │           │           │
-   Req 1    │███████████│           │           │           │
-   Req 2    │           │███████████│           │           │
-   Req 3    │           │           │███████████│████████████│
+    rect rgb(209, 250, 229)
+        Note over W: ASYNCHRONOUS (1 worker) — Total: 1500ms — 2.0 req/sec (3x!)
+        par Overlapped I/O
+            W->>W: Req 1 (CPU → wait → CPU)
+        and
+            W->>W: Req 2 (CPU → wait → CPU)
+        and
+            W->>W: Req 3 (CPU → wait → CPU)
+        end
+    end
 
-   Total time: 4500ms (sum of all requests)
-   Throughput: 0.67 req/sec
-
-
-   ASYNCHRONOUS (1 worker):
-
-   Time ──▶  0ms        500ms       1000ms      1500ms
-            │           │           │           │
-   Req 1    │█░░░░░░░░░█│           │           │
-   Req 2    │ █░░░░░░░░█│           │           │
-   Req 3    │  █░░░░░░░░│█          │           │
-
-   Legend: █ = CPU work, ░ = Waiting for I/O
-
-   Total time: 1500ms (overlapped waiting)
-   Throughput: 2.0 req/sec  (3x improvement!)
-
-
-   WHY THIS MATTERS FOR AI:
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │  Typical LLM API call:                                                  │
-   │    - Network round trip: 50-200ms                                       │
-   │    - LLM inference: 500-3000ms                                          │
-   │    - Response streaming: 100-500ms                                      │
-   │                                                                         │
-   │  During this time, your server is just WAITING.                        │
-   │  Async allows handling other requests during the wait.                  │
-   └─────────────────────────────────────────────────────────────────────────┘
+    Note over W: WHY THIS MATTERS FOR AI:<br/>Typical LLM API call:<br/>• Network round trip: 50–200ms<br/>• LLM inference: 500–3000ms<br/>• Response streaming: 100–500ms<br/>During this time, your server is just WAITING.<br/>Async allows handling other requests during the wait.
 ```
 
 **Figure 4.1:** Synchronous vs asynchronous request handling
@@ -846,36 +837,48 @@ async def stream_with_backpressure(
 
 Long-running AI tasks should be processed asynchronously:
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TB
+    API["FastAPI<br/>(API)"]
+    Broker["Redis<br/>(Broker)"]
+    Workers["Celery<br/>Workers"]
+    TaskQ["Task Queue<br/>(Priority)"]
+    ResultB["Result Backend<br/>(Redis/DB)"]
+
+    API -- "enqueue" --> Broker
+    Broker -- "dequeue" --> Workers
+    Broker --> TaskQ
+    Broker --> ResultB
+    Workers --> ResultB
+    API -. "poll for results" .-> ResultB
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class API service
+    class Broker data
+    class Workers external
+    class TaskQ data
+    class ResultB data
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      CELERY ARCHITECTURE FOR AI                             │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-   ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-   │   FastAPI   │────────▶│    Redis    │◀────────│   Celery    │
-   │   (API)     │  enqueue│   (Broker)  │  dequeue│   Workers   │
-   └─────────────┘         └─────────────┘         └──────┬──────┘
-         │                        │                       │
-         │                        │                       │
-         │   ┌────────────────────┴───────────────────┐   │
-         │   │                                        │   │
-         │   ▼                                        ▼   │
-         │  ┌─────────────────┐            ┌─────────────────┐
-         │  │  Task Queue     │            │  Result Backend │
-         │  │  (Priority)     │            │  (Redis/DB)     │
-         │  └─────────────────┘            └─────────────────┘
-         │                                        │
-         │                                        │
-         └───────────── poll for results ─────────┘
+**Task States:**
 
-   TASK STATES:
-   ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-   │ PENDING │────▶│ STARTED │────▶│ RUNNING │────▶│ SUCCESS │
-   └─────────┘     └─────────┘     └─────────┘     └────┬────┘
-                                        │               │
-                                        │         ┌─────┴─────┐
-                                        └────────▶│  FAILURE  │
-                                                  └───────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> STARTED
+    STARTED --> RUNNING
+    RUNNING --> SUCCESS
+    RUNNING --> FAILURE
+    SUCCESS --> [*]
+    FAILURE --> [*]
 ```
 
 **Figure 4.2:** Celery task processing architecture
@@ -1187,53 +1190,51 @@ async def cancel_task(task_id: str) -> dict:
 
 ### 4.4 Dead Letter Handling and Retry Strategies
 
+**1. Exponential Backoff**
+
+> `delay = base_delay * (2 ^ attempt) + jitter`
+
+| Attempt | Wait | Action |
+|---|---|---|
+| 1 | 1s | Retry |
+| 2 | 2s | Retry |
+| 3 | 4s | Retry |
+| 4 | 8s | Give up (Dead Letter Queue) |
+
+**2. Circuit Breaker + Retry**
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+stateDiagram-v2
+    CLOSED --> OPEN : 5 failures
+    OPEN --> HALF_OPEN : 30s timeout
+    HALF_OPEN --> CLOSED : success
+    HALF_OPEN --> OPEN : failure
+
+    note right of HALF_OPEN : Test 1 request
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         RETRY STRATEGY PATTERNS                             │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-   1. EXPONENTIAL BACKOFF
-      ────────────────────
-      Attempt 1: Wait 1s   ──▶ Retry
-      Attempt 2: Wait 2s   ──▶ Retry
-      Attempt 3: Wait 4s   ──▶ Retry
-      Attempt 4: Wait 8s   ──▶ Give up (Dead Letter Queue)
+**3. Dead Letter Queue Pattern**
 
-      delay = base_delay * (2 ^ attempt) + jitter
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    PQ["Primary<br/>Queue"] --> RQ["Retry<br/>Queue"] --> DLQ["Dead<br/>Letter Queue"]
+    DLQ --> MR["Manual<br/>Review"]
+    DLQ --> AS["Alert<br/>System"]
 
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
 
-   2. CIRCUIT BREAKER + RETRY
-      ────────────────────────
-      ┌─────────────────────────────────────────────────────────────────────┐
-      │                                                                     │
-      │    CLOSED ──────5 failures──────▶ OPEN                             │
-      │       ▲                            │                                │
-      │       │                         30s timeout                         │
-      │       │                            │                                │
-      │    success                         ▼                                │
-      │       │                      HALF-OPEN                              │
-      │       │                       (test 1 request)                      │
-      │       │                            │                                │
-      │       └──────── success ───────────┘                                │
-      │                     │                                               │
-      │                  failure ──▶ back to OPEN                          │
-      └─────────────────────────────────────────────────────────────────────┘
-
-
-   3. DEAD LETTER QUEUE PATTERN
-      ──────────────────────────
-      ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-      │   Primary   │────▶│   Retry     │────▶│   Dead      │
-      │   Queue     │     │   Queue     │     │   Letter Q  │
-      └─────────────┘     └─────────────┘     └──────┬──────┘
-                                                     │
-                                          ┌──────────┴──────────┐
-                                          │                     │
-                                          ▼                     ▼
-                                    ┌───────────┐        ┌───────────┐
-                                    │  Manual   │        │   Alert   │
-                                    │  Review   │        │  System   │
-                                    └───────────┘        └───────────┘
+    class PQ service
+    class RQ service
+    class DLQ gateway
+    class MR external
+    class AS observability
 ```
 
 **Figure 4.3:** Retry and dead letter patterns

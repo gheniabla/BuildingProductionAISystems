@@ -26,17 +26,39 @@ A comprehensive technical reference supporting the Building Production AI System
 
 **Agentic RAG** treats retrieval as a tool the agent can invoke conditionally, iteratively, and with self-reflection:
 
-```
-Naive RAG:
-  Query --> Retrieve --> Generate --> Done
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    subgraph naive["Naive RAG"]
+        direction LR
+        NQ["Query"] --> NR["Retrieve"] --> NG["Generate"] --> ND["Done"]
+    end
 
-Agentic RAG:
-  Query --> Think: "Do I need to retrieve?"
-         --> If yes: Retrieve --> Evaluate results
-             --> "Are these results sufficient?"
-             --> If no: Reformulate query --> Retrieve again
-         --> Generate (with or without retrieved context)
-         --> Self-check: "Is my answer grounded in sources?"
+    subgraph agentic["Agentic RAG"]
+        AQ["Query"] --> AT{"Think: Do I need to retrieve?"}
+        AT -- "No" --> AG["Generate"]
+        AT -- "Yes" --> AR["Retrieve"]
+        AR --> AE{"Evaluate: Are results sufficient?"}
+        AE -- "Yes" --> AG
+        AE -- "No" --> AF["Reformulate query"] --> AR
+        AG --> SC{"Self-check: Is answer grounded in sources?"}
+        SC -- "Yes" --> AD["Done"]
+        SC -- "No" --> AT
+    end
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class NQ,AQ client
+    class NR,AR service
+    class NG,AG observability
+    class ND,AD data
+    class AT,AE,SC gateway
+    class AF external
 ```
 
 ### 1.2 Adaptive Retrieval
@@ -137,20 +159,30 @@ App <-> Custom DB integration                           <-> MCP Server (Database
 
 MCP follows a client-server architecture:
 
-```
-┌─────────────────────────────────────────────┐
-│                 Host Application             │
-│  (Claude Desktop, IDE, Custom App)          │
-│                                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │MCP Client│  │MCP Client│  │MCP Client│  │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
-└───────┼──────────────┼──────────────┼────────┘
-        │              │              │
-  ┌─────▼─────┐  ┌─────▼─────┐  ┌────▼──────┐
-  │MCP Server │  │MCP Server │  │MCP Server │
-  │(GitHub)   │  │(Database) │  │(Slack)    │
-  └───────────┘  └───────────┘  └───────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart TD
+    subgraph Host["Host Application (Claude Desktop, IDE, Custom App)"]
+        C1["MCP Client"]
+        C2["MCP Client"]
+        C3["MCP Client"]
+    end
+
+    C1 --> S1["MCP Server (GitHub)"]
+    C2 --> S2["MCP Server (Database)"]
+    C3 --> S3["MCP Server (Slack)"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class C1,C2,C3 service
+    class S1 external
+    class S2 data
+    class S3 external
 ```
 
 **Host**: The application containing the LLM (e.g., Claude Desktop, a custom FastAPI app)
@@ -524,19 +556,27 @@ The key insight: reasoning without acting produces plans that may be wrong; acti
 
 ### 5.2 The Thought → Action → Observation Loop
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                                                          │
-│  ┌──────────┐     ┌──────────┐     ┌──────────────┐    │
-│  │ Thought  │────>│  Action  │────>│ Observation   │    │
-│  │(Reason)  │     │(Tool Use)│     │(Tool Result)  │    │
-│  └──────────┘     └──────────┘     └──────┬───────┘    │
-│       ^                                     │            │
-│       └─────────────────────────────────────┘            │
-│                                                          │
-│  Repeat until: Action = finish(answer)                  │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+flowchart LR
+    T["Thought (Reason)"] --> A["Action (Tool Use)"]
+    A --> O["Observation (Tool Result)"]
+    O --> D{"Action = finish?"}
+    D -- "No" --> T
+    D -- "Yes" --> F["Return answer"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class T observability
+    class A service
+    class O external
+    class D gateway
+    class F data
 ```
 
 ### 5.3 Implementation Pattern
@@ -673,30 +713,36 @@ Context engineering is the discipline of optimizing what goes into the LLM's con
 
 A production LLM request may assemble context from many sources:
 
-```
-┌─────────────────────────────────────┐
-│         Context Window              │
-│                                     │
-│  ┌─────────────────────────────┐    │
-│  │ System Prompt               │    │  ← Static
-│  ├─────────────────────────────┤    │
-│  │ Tool Definitions            │    │  ← Semi-static
-│  ├─────────────────────────────┤    │
-│  │ Few-Shot Examples           │    │  ← Semi-static
-│  ├─────────────────────────────┤    │
-│  │ Retrieved Documents (RAG)   │    │  ← Dynamic
-│  ├─────────────────────────────┤    │
-│  │ Memory / User Profile       │    │  ← Session-dependent
-│  ├─────────────────────────────┤    │
-│  │ Conversation History        │    │  ← Dynamic, growing
-│  ├─────────────────────────────┤    │
-│  │ Tool Results                │    │  ← Dynamic
-│  ├─────────────────────────────┤    │
-│  │ Current User Message        │    │  ← Dynamic
-│  └─────────────────────────────┘    │
-│                                     │
-│  Reserved for Output                │  ← Must leave room
-└─────────────────────────────────────┘
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4F46E5', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#3730A3', 'secondaryColor': '#D1FAE5', 'secondaryTextColor': '#065F46', 'secondaryBorderColor': '#059669', 'tertiaryColor': '#FEF3C7', 'tertiaryTextColor': '#92400E', 'tertiaryBorderColor': '#D97706', 'lineColor': '#6B7280', 'textColor': '#1F2937', 'fontSize': '14px'}}}%%
+block-beta
+    columns 1
+    block:window["Context Window"]
+        columns 2
+        SP["System Prompt"]:1 SL["Static"]:1
+        TD["Tool Definitions"]:1 SS1["Semi-static"]:1
+        FS["Few-Shot Examples"]:1 SS2["Semi-static"]:1
+        RD["Retrieved Documents (RAG)"]:1 DY1["Dynamic"]:1
+        MU["Memory / User Profile"]:1 SD["Session-dependent"]:1
+        CH["Conversation History"]:1 DY2["Dynamic, growing"]:1
+        TR["Tool Results"]:1 DY3["Dynamic"]:1
+        CM["Current User Message"]:1 DY4["Dynamic"]:1
+    end
+    RO["Reserved for Output — Must leave room"]
+
+    classDef client fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF
+    classDef gateway fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+    classDef service fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef data fill:#10B981,stroke:#047857,color:#FFFFFF
+    classDef external fill:#F59E0B,stroke:#D97706,color:#FFFFFF
+    classDef observability fill:#8B5CF6,stroke:#6D28D9,color:#FFFFFF
+
+    class SP,TD,FS service
+    class RD,CH,TR,CM client
+    class MU observability
+    class RO gateway
+    class SL,SS1,SS2 data
+    class DY1,DY2,DY3,DY4,SD external
 ```
 
 ### 6.3 Context Window Management Strategies
